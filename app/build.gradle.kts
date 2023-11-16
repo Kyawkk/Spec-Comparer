@@ -65,6 +65,7 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.46")
     kapt("com.google.dagger:hilt-android-compiler:2.46")
     implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation ("org.jsoup:jsoup:1.16.2")
 
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
