@@ -1,20 +1,29 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.kyawzinlinn.speccomparer
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.kyawzinlinn.speccomparer.domain.model.Product
-import com.kyawzinlinn.speccomparer.presentation.search.SearchViewModel
+import androidx.navigation.compose.rememberNavController
+import com.kyawzinlinn.speccomparer.presentation.navigation.NavigationGraph
+import com.kyawzinlinn.speccomparer.presentation.search.ProductViewModel
 import com.kyawzinlinn.speccomparer.ui.theme.SpecComparerTheme
 import com.kyawzinlinn.speccomparer.utils.ProductType
 import com.kyawzinlinn.speccomparer.utils.Resource
@@ -25,24 +34,28 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val viewModel: SearchViewModel = hiltViewModel()
-            viewModel.search("xiaomi",20,ProductType.Smartphone)
-            val searchResultsState by viewModel.searchResults.collectAsState(Resource.Loading())
+            val viewModel: ProductViewModel = hiltViewModel()
+            val searchResultsState by viewModel.compareResponse.collectAsState(Resource.Loading())
+            val navController = rememberNavController()
+            val uiState by viewModel.uiState.collectAsState()
 
             SpecComparerTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    
-                    Greeting(
-                        when (searchResultsState) {
-                            is Resource.Loading -> "Loading..."
-                            is Resource.Success -> (searchResultsState as Resource.Success<List<Product>>).data.toString()
-                            is Resource.Error -> (searchResultsState as Resource.Error<List<Product>>).message
-                        }
-                    )
+                Scaffold(
+                    topBar = {
+                        CenterAlignedTopAppBar(
+                            title = { Text(text = uiState.title) },
+                            navigationIcon = {
+                                if (uiState.canNavigateBack) {
+                                    IconButton(onClick = {navController.navigateUp()}) {
+                                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                                    }
+                                }
+                            }
+                        )
+                    }
+                ){
+                    NavigationGraph(viewModel = viewModel, navController = navController, modifier = Modifier.padding(it))
                 }
             }
         }
