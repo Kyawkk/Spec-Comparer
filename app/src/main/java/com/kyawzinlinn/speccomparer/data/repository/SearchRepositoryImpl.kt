@@ -14,7 +14,13 @@ class SearchRepositoryImpl(private val apiService: ApiService) : SearchRepositor
         query: String,
         limit: Int,
         productType: ProductType
-    ): List<Product> = apiService.search(query, limit, productType.title).addImageLinks()
+    ): Resource<List<Product>> {
+        try {
+            return Resource.Success(apiService.search(query, limit, productType.title).addImageLinks())
+        }catch (e: Exception) {
+            return Resource.Error(e.message.toString())
+        }
+    }
 
     override suspend fun getProductSpecifications(
         device: String,

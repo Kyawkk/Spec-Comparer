@@ -7,7 +7,7 @@ import com.kyawzinlinn.speccomparer.utils.ProductType
 import com.kyawzinlinn.speccomparer.utils.Resource
 
 interface SearchRepository {
-    suspend fun search(query: String, limit: Int, productType: ProductType) : List<Product>
+    suspend fun search(query: String, limit: Int, productType: ProductType) : Resource<List<Product>>
 
     suspend fun getProductSpecifications(device: String, type: ProductType) : Resource<ProductSpecificationResponse>
 }

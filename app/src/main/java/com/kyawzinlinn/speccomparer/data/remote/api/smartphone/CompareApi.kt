@@ -14,7 +14,6 @@ import com.kyawzinlinn.speccomparer.utils.JsoupConfig
 import com.kyawzinlinn.speccomparer.utils.ProductType
 import com.kyawzinlinn.speccomparer.utils.Resource
 import com.kyawzinlinn.speccomparer.utils.getAllChildren
-import com.kyawzinlinn.speccomparer.utils.print
 import com.kyawzinlinn.speccomparer.utils.toParameter
 import org.jsoup.nodes.Element
 
@@ -32,7 +31,6 @@ object CompareApi {
 
             val cardElements = document.select("body>div.main-container>main>article>div.card")
             val productDetails = getProductDetails(cardElements.get(0))
-
             val specifications = mutableListOf<SpecificationItem>()
 
             cardElements.forEach {
@@ -41,14 +39,14 @@ object CompareApi {
                     specifications.add(specificationItem)
                 }
             }
-
-            return Resource.Success(ProductSpecificationResponse(productDetails,specifications))
+            return Resource.Success(ProductSpecificationResponse(productDetails, specifications))
         } catch (e: Exception) {
             return Resource.Error(e.message ?: "")
         }
+        return Resource.Loading()
     }
 
-    private fun getProductDetails(element: Element) : ProductSpecification {
+    private fun getProductDetails(element: Element): ProductSpecification {
         val productName = element.select("div.card-block>div.card-head>h1").text()
         val productImageUrl = element.select("div.card-block>div>img").attr("src")
         val specElements = element.select("div.card-block>ul>li")
@@ -63,7 +61,7 @@ object CompareApi {
             )
         }
 
-        return ProductSpecification(productName,productImageUrl,productSpecifications)
+        return ProductSpecification(productName, productImageUrl, productSpecifications)
     }
 
     fun compareProducts(

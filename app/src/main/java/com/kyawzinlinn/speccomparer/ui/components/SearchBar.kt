@@ -1,10 +1,16 @@
 package com.kyawzinlinn.speccomparer.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -16,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,9 +43,14 @@ fun SearchBar(
 
     TextField(
         value = value,
-        modifier = modifier.fillMaxWidth().padding(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .border(border = BorderStroke(1.dp,Color.LightGray), shape = RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(6.dp)),
         placeholder = { Text("Search device...") },
         shape = RoundedCornerShape(10.dp),
+        leadingIcon = { Icon(imageVector = Icons.Rounded.Search, tint = Color.Gray, contentDescription = null) },
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Search
         ),
@@ -47,7 +59,9 @@ fun SearchBar(
         ),
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
+            unfocusedIndicatorColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            focusedContainerColor = Color.Transparent
         ),
         onValueChange = {
             value = it
@@ -59,5 +73,5 @@ fun SearchBar(
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun SearchBarPreview() {
-
+    SearchBar("",{},{})
 }

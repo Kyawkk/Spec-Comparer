@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package com.kyawzinlinn.speccomparer.presentation.search
 
@@ -37,11 +37,13 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kyawzinlinn.speccomparer.domain.model.Product
+import com.kyawzinlinn.speccomparer.ui.components.LoadingScreen
 import com.kyawzinlinn.speccomparer.ui.components.SearchBar
 import com.kyawzinlinn.speccomparer.utils.Resource
 
 @Composable
 fun SearchScreen(
+    suggestionsState: Resource<List<Product>>,
     searchResultsState: Resource<List<Product>>,
     onValueChange: (String) -> Unit,
     onSearch: (String) -> Unit,
@@ -51,46 +53,56 @@ fun SearchScreen(
     var showSuggestions by rememberSaveable { mutableStateOf(false) }
     var value by rememberSaveable { mutableStateOf("") }
     var searchResults by rememberSaveable { mutableStateOf(listOf<Product>()) }
+    var suggestions by rememberSaveable { mutableStateOf(listOf<Product>()) }
 
-    LaunchedEffect(searchResultsState.data) {
+    LaunchedEffect(searchResultsState.data, suggestionsState.data) {
         searchResults = searchResultsState.data ?: emptyList()
+        suggestions = suggestionsState.data ?: emptyList()
     }
 
+    Log.d("TAG", "Suggestions: $suggestions")
+
     Column(
-        modifier = modifier
-            .fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         SearchBar(
             input = value,
             onValueChange = { keyword ->
                 onValueChange(keyword)
-                showSuggestions = searchResults.isNotEmpty() && keyword.isNotEmpty()
+                showSuggestions = suggestions.isNotEmpty() && keyword.isNotEmpty()
             },
             onSearch = onSearch
         )
 
-        if (!showSuggestions) SearchResultList(searchResults, onProductItemClick = onProductItemClick)
+        when (searchResultsState) {
+            is Resource.Loading -> LoadingScreen()
+            is Resource.Success -> SearchResultList(
+                searchResults, onProductItemClick = onProductItemClick
+            )
+
+            is Resource.Error -> {}
+            else -> {}
+        }
 
         AnimatedVisibility(
-            visible = showSuggestions,
-            enter = fadeIn(
+            visible = showSuggestions, enter = fadeIn(
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMedium
+                    dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium
                 )
-            ),
-            exit = fadeOut(
+            ), exit = fadeOut(
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMedium
+                    dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium
                 )
             )
         ) {
-            SuggestionList(suggestions = searchResults.take(8), onSuggestionItemClick = {
-                value = it
-                onSearch(it)
-                showSuggestions = false
-            })
+            SuggestionList(
+                suggestions = suggestions,
+                onSuggestionItemClick = {
+                    value = it
+                    onSearch(it)
+                    showSuggestions = false
+                }
+            )
         }
     }
 }
@@ -103,33 +115,31 @@ fun SearchResultList(
 ) {
 
     val context = LocalContext.current
-    LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    LazyColumn(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         items(searchResults) { product ->
-            //val imageUrl = ImageUrlBuilder.buildSingleImage(product.content_type + "/" + product.name.toParameter())
-            Card (
-                onClick = {onProductItemClick(product)}
-            ){
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .animateContentSize(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioLowBouncy,
-                            stiffness = Spring.StiffnessLow
+            Card(onClick = { onProductItemClick(product) }) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize(
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessLow
+                            )
                         )
-                    )
-                    .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        .padding(16.dp), verticalAlignment = Alignment.CenterVertically
+                ) {
                     AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(product.imageUrl)
-                            .crossfade(true)
-                            .build(),
-                        modifier = Modifier,
-                        contentDescription = null
+                        model = ImageRequest.Builder(context).data(product.imageUrl).crossfade(true)
+                            .build(), modifier = Modifier, contentDescription = null
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = product.name,
-                        style = MaterialTheme.typography.titleMedium
+                        text = product.name, style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
@@ -144,16 +154,13 @@ private fun SuggestionList(
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(suggestions) {
-            Card(
-                modifier = Modifier,
-                onClick = { onSuggestionItemClick(it.name) }
-            ) {
+            Card(modifier = Modifier, onClick = { onSuggestionItemClick(it.name) }) {
                 Text(
-                    text = it.name,
-                    modifier = Modifier
+                    text = it.name, modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
                 )

@@ -9,24 +9,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.kyawzinlinn.speccomparer.presentation.detail.ProductDetailScreen
 import com.kyawzinlinn.speccomparer.presentation.home.HomeScreen
-import com.kyawzinlinn.speccomparer.presentation.search.ProductViewModel
+import com.kyawzinlinn.speccomparer.presentation.ProductViewModel
 import com.kyawzinlinn.speccomparer.presentation.search.SearchScreen
 import com.kyawzinlinn.speccomparer.utils.ProductType
 import com.kyawzinlinn.speccomparer.utils.getProductType
 
 @Composable
 fun NavigationGraph(
-    viewModel: ProductViewModel,
-    navController: NavHostController,
-    modifier: Modifier = Modifier
+    viewModel: ProductViewModel, navController: NavHostController, modifier: Modifier = Modifier
 ) {
-    val searchResults by viewModel.searchResults.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
 
     NavHost(
-        navController = navController,
-        modifier = modifier,
-        startDestination = ScreenRoute.Home.name
+        navController = navController, modifier = modifier, startDestination = ScreenRoute.Home.name
     ) {
 
         composable(ScreenRoute.Home.name) {
@@ -34,37 +29,50 @@ fun NavigationGraph(
                 updateTitle("Home")
                 updateNavigateBackStatus(false)
             }
-            HomeScreen(onNavigateSearch = { type ->
+            HomeScreen(onNavigateSearch = { type, title ->
+                viewModel.apply {
+                    resetSearchResults()
+                }
                 val data = type.name
-                navController.navigate("${ScreenRoute.Search.name}/$data")
+                navController.navigate("${ScreenRoute.Search.name}/$data/$title")
             })
         }
 
-        composable( "${ScreenRoute.Search.name}/{data}") {
+        composable("${ScreenRoute.Search.name}/{data}/{title}") {
+            val title = it?.arguments?.getString("title")
 
             viewModel.apply {
-                updateNavigateBackStatus(false)
-                updateTitle("Search")
+                updateTitle(title ?: "Search")
+                updateNavigateBackStatus(true)
             }
-            val type = ProductType.valueOf(it?.arguments?.getString("data")!!)
+            val type = ProductType.valueOf(it.arguments?.getString("data")!!)
             SearchScreen(
-                searchResultsState = searchResults,
-                onValueChange = {viewModel.search(it,8,type)},
-                onSearch = {viewModel.search(it,500,type)},
+                suggestionsState = uiState.suggestions,
+                searchResultsState = uiState.searchResults,
+                onValueChange = { viewModel.getSuggestions(it, 8, type) },
+                onSearch = { viewModel.search(it, 500, type) },
                 onProductItemClick = {
-                    navController.navigate("${ScreenRoute.Details.name}/${it.name}/${getProductType(it.content_type)}")
-                }
-            )
+                    navController.navigate(
+                        "${ScreenRoute.Details.name}/${it.name}/${
+                            getProductType(
+                                it.content_type
+                            )
+                        }"
+                    )
+                    viewModel.apply {
+                        resetProductDetails()
+                        getProductSpecification(it.name, getProductType(it.content_type))
+                    }
+                })
         }
 
         composable("${ScreenRoute.Details.name}/{product}/{productType}") {
-            val product = it?.arguments?.getString("product") ?: ""
-            val productType = ProductType.valueOf(it?.arguments?.getString("productType") ?: "")
+            val product = it.arguments?.getString("product") ?: ""
+            val productType = ProductType.valueOf(it.arguments?.getString("productType") ?: "")
 
             viewModel.apply {
                 updateTitle(product)
                 updateNavigateBackStatus(true)
-                getProductSpecification(product,productType)
             }
 
             ProductDetailScreen(

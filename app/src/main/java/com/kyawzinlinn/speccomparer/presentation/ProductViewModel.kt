@@ -1,12 +1,9 @@
-package com.kyawzinlinn.speccomparer.presentation.search
+package com.kyawzinlinn.speccomparer.presentation
 
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kyawzinlinn.speccomparer.R
 import com.kyawzinlinn.speccomparer.data.repository.SearchRepository
 import com.kyawzinlinn.speccomparer.domain.model.Product
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.CompareResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.utils.ProductType
 import com.kyawzinlinn.speccomparer.utils.Resource
@@ -24,11 +21,6 @@ import javax.inject.Inject
 class ProductViewModel @Inject constructor(
     private val searchRepository: SearchRepository
 ) : ViewModel() {
-    private val _searchResults = MutableStateFlow<Resource<List<Product>>>(Loading())
-    val searchResults: StateFlow<Resource<List<Product>>> = _searchResults.asStateFlow()
-
-    private val _compareResponse = MutableStateFlow<Resource<CompareResponse>>(Loading())
-    val compareResponse : StateFlow<Resource<CompareResponse>> = _compareResponse.asStateFlow()
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -45,23 +37,44 @@ class ProductViewModel @Inject constructor(
         }
     }
 
+    fun resetProductDetails() {
+        _uiState.update {
+            it.copy(
+                productDetails = Loading()
+            )
+        }
+    }
+
+    fun resetSearchResults() {
+        _uiState.update {
+            it.copy(
+                searchResults = Resource.Default()
+            )
+        }
+    }
+
     fun search(query: String, limit: Int, productType: ProductType) {
         viewModelScope.launch {
-            _searchResults.value = Loading()
-            try {
-                val result = searchRepository.search(query, limit, productType)
-                _searchResults.value = Resource.Success(result)
-            } catch (e: Exception) {
-                _searchResults.value = Resource.Error(e.message.toString())
+            _uiState.update {
+                it.copy(searchResults = searchRepository.search(query, limit, productType))
+            }
+        }
+    }
+
+    fun getSuggestions(query: String, limit: Int, productType: ProductType) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(suggestions = searchRepository.search(query, limit, productType))
             }
         }
     }
 
     fun getProductSpecification(device: String, type: ProductType) {
         viewModelScope.launch(Dispatchers.IO) {
+            val productDetails = searchRepository.getProductSpecifications(device, type)
             _uiState.update {
                 it.copy(
-                    productDetails = searchRepository.getProductSpecifications(device, type)
+                    productDetails = productDetails
                 )
             }
         }
@@ -72,5 +85,6 @@ data class UiState(
     val title: String = "",
     val canNavigateBack: Boolean = false,
     val productDetails : Resource<ProductSpecificationResponse> = Loading(),
-    val searchResults : Resource<List<Product>> = Loading()
+    val searchResults : Resource<List<Product>> = Resource.Default(),
+    val suggestions : Resource<List<Product>> = Resource.Default(),
 )
