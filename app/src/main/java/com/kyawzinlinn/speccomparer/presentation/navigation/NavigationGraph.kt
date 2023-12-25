@@ -7,9 +7,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.kyawzinlinn.speccomparer.presentation.ProductViewModel
 import com.kyawzinlinn.speccomparer.presentation.detail.ProductDetailScreen
 import com.kyawzinlinn.speccomparer.presentation.home.HomeScreen
-import com.kyawzinlinn.speccomparer.presentation.ProductViewModel
 import com.kyawzinlinn.speccomparer.presentation.search.SearchScreen
 import com.kyawzinlinn.speccomparer.utils.ProductType
 import com.kyawzinlinn.speccomparer.utils.getProductType
@@ -27,6 +27,7 @@ fun NavigationGraph(
         composable(ScreenRoute.Home.name) {
             viewModel.apply {
                 updateTitle("Home")
+                updateTrailingIconStatus(false)
                 updateNavigateBackStatus(false)
             }
             HomeScreen(onNavigateSearch = { type, title ->
@@ -43,6 +44,7 @@ fun NavigationGraph(
 
             viewModel.apply {
                 updateTitle(title ?: "Search")
+                updateTrailingIconStatus(false)
                 updateNavigateBackStatus(true)
             }
             val type = ProductType.valueOf(it.arguments?.getString("data")!!)
@@ -61,7 +63,7 @@ fun NavigationGraph(
                     )
                     viewModel.apply {
                         resetProductDetails()
-                        getProductSpecification(it.name, getProductType(it.content_type))
+                        getFirstProductSpecifications(it.name, getProductType(it.content_type))
                     }
                 })
         }
@@ -73,10 +75,21 @@ fun NavigationGraph(
             viewModel.apply {
                 updateTitle(product)
                 updateNavigateBackStatus(true)
+                updateTrailingIconStatus(true)
             }
 
             ProductDetailScreen(
-                productSpecificationResponseState = uiState.productDetails
+                firstProductSpecificationResponseState = uiState.firstProductDetails,
+                secondProductSpecificationResponseState = uiState.secondProductDetails,
+                isCompareState = uiState.isCompareState,
+                showBottomSheet = uiState.showBottomSheet,
+                onDismissBottomSheet = { viewModel.showBottomSheet(false) },
+                onCompare = {firstDevice, secondDevice ->
+                    viewModel.apply {
+                        getFirstProductSpecifications(firstDevice,productType)
+                        getSecondProductSpecifications(secondDevice,productType)
+                    }
+                }
             )
         }
     }

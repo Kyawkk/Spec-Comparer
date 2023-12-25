@@ -45,7 +45,6 @@ fun SearchBar(
         value = value,
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
             .border(border = BorderStroke(1.dp,Color.LightGray), shape = RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(6.dp)),
         placeholder = { Text("Search device...") },

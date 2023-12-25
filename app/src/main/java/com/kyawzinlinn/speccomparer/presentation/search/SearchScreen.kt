@@ -67,6 +67,7 @@ fun SearchScreen(
     ) {
         SearchBar(
             input = value,
+            modifier = Modifier.padding(16.dp),
             onValueChange = { keyword ->
                 onValueChange(keyword)
                 showSuggestions = suggestions.isNotEmpty() && keyword.isNotEmpty()

@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.kyawzinlinn.speccomparer.presentation.ProductViewModel
@@ -27,16 +26,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+
             val viewModel: ProductViewModel = hiltViewModel()
             val navController = rememberNavController()
             val uiState by viewModel.uiState.collectAsState()
 
             SpecComparerTheme {
-                Scaffold(topBar = {
-                    TopBar(title = uiState.title,
-                        canNavigateBack = uiState.canNavigateBack,
-                        navigateUp = { navController.navigateUp() })
-                }) {
+                Scaffold(
+                    topBar = {
+                        TopBar(
+                            title = uiState.title,
+                            canNavigateBack = uiState.canNavigateBack,
+                            showTrailingIcon = uiState.showTrailingIcon,
+                            onTrailingIconClick = { viewModel.showBottomSheet(true) },
+                            navigateUp = { navController.navigateUp() },
+                        )
+                    }
+                ) {
                     NavigationGraph(
                         viewModel = viewModel,
                         navController = navController,
@@ -45,20 +51,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!", modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SpecComparerTheme {
-        Greeting("Android")
     }
 }

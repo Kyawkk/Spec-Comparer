@@ -68,6 +68,7 @@ dependencies {
     implementation ("org.jsoup:jsoup:1.16.2")
     // https://mvnrepository.com/artifact/org.htmlunit/htmlunit-cssparser
     implementation("org.htmlunit:htmlunit-cssparser:3.7.0")
+    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
 
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)

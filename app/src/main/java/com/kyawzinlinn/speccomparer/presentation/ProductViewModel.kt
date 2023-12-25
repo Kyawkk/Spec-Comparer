@@ -31,6 +31,18 @@ class ProductViewModel @Inject constructor(
         }
     }
 
+    fun updateTrailingIconStatus(showTrailingIcon: Boolean) {
+        _uiState.update {
+            it.copy(showTrailingIcon = showTrailingIcon)
+        }
+    }
+
+    fun showBottomSheet(showBottomSheet: Boolean) {
+        _uiState.update{
+            it.copy(showBottomSheet = showBottomSheet)
+        }
+    }
+
     fun updateTitle(title: String) {
         _uiState.update {
             it.copy(title = title)
@@ -40,7 +52,7 @@ class ProductViewModel @Inject constructor(
     fun resetProductDetails() {
         _uiState.update {
             it.copy(
-                productDetails = Loading()
+                firstProductDetails = Loading()
             )
         }
     }
@@ -69,12 +81,25 @@ class ProductViewModel @Inject constructor(
         }
     }
 
-    fun getProductSpecification(device: String, type: ProductType) {
+    fun getFirstProductSpecifications(device: String, type: ProductType) {
         viewModelScope.launch(Dispatchers.IO) {
             val productDetails = searchRepository.getProductSpecifications(device, type)
             _uiState.update {
                 it.copy(
-                    productDetails = productDetails
+                    isCompareState = false,
+                    firstProductDetails = productDetails
+                )
+            }
+        }
+    }
+
+    fun getSecondProductSpecifications(device: String, type: ProductType) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val productDetails = searchRepository.getProductSpecifications(device, type)
+            _uiState.update {
+                it.copy(
+                    isCompareState = true,
+                    secondProductDetails = productDetails
                 )
             }
         }
@@ -84,7 +109,11 @@ class ProductViewModel @Inject constructor(
 data class UiState(
     val title: String = "",
     val canNavigateBack: Boolean = false,
-    val productDetails : Resource<ProductSpecificationResponse> = Loading(),
+    val showTrailingIcon : Boolean = false,
+    val showBottomSheet : Boolean = false,
+    val isCompareState: Boolean = false,
+    val firstProductDetails : Resource<ProductSpecificationResponse> = Loading(),
+    val secondProductDetails : Resource<ProductSpecificationResponse> = Loading(),
     val searchResults : Resource<List<Product>> = Resource.Default(),
     val suggestions : Resource<List<Product>> = Resource.Default(),
 )

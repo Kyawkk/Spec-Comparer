@@ -9,7 +9,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,34 +43,63 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductDetail
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecification
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationItem
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationTable
+import com.kyawzinlinn.speccomparer.ui.components.CompareBottomSheet
 import com.kyawzinlinn.speccomparer.ui.components.LoadingScreen
 import com.kyawzinlinn.speccomparer.utils.ImageUrlBuilder
 import com.kyawzinlinn.speccomparer.utils.Resource
-import kotlin.math.exp
 
 @Composable
 fun ProductDetailScreen(
-    productSpecificationResponseState: Resource<ProductSpecificationResponse>,
+    showBottomSheet: Boolean,
+    isCompareState: Boolean,
+    onCompare: (String,String) -> Unit,
+    onDismissBottomSheet: () -> Unit,
+    firstProductSpecificationResponseState: Resource<ProductSpecificationResponse>,
+    secondProductSpecificationResponseState: Resource<ProductSpecificationResponse>,
     modifier: Modifier = Modifier.padding(16.dp)
 ) {
+    var showBottomSheetValue by remember { mutableStateOf(false) }
 
-    Column(modifier = modifier.fillMaxSize()) {
-        when (productSpecificationResponseState) {
-            is Resource.Loading -> LoadingScreen()
-            is Resource.Success -> ProductDetailContent(productSpecificationResponseState.data!!)
-            is Resource.Error -> {}
-            else -> {}
+    LaunchedEffect(showBottomSheet) {
+        showBottomSheetValue = showBottomSheet
+    }
+
+    CompareBottomSheet(
+        firstDevice = firstProductSpecificationResponseState.data?.productSpecification?.productName
+            ?: "",
+        showBottomSheet = showBottomSheet,
+        onCompare = onCompare,
+        onDismissBottomSheet = onDismissBottomSheet
+    )
+
+    Row (modifier = modifier.fillMaxSize()) {
+        Column(modifier = Modifier.weight(if(isCompareState) 0.5f else 1f)) {
+            when (firstProductSpecificationResponseState) {
+                is Resource.Loading -> LoadingScreen()
+                is Resource.Success -> ProductDetailContent(firstProductSpecificationResponseState.data!!)
+                is Resource.Error -> {}
+                else -> {}
+            }
+        }
+
+        if (isCompareState) {
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(0.5f)) {
+                when (secondProductSpecificationResponseState) {
+                    is Resource.Loading -> LoadingScreen()
+                    is Resource.Success -> ProductDetailContent(secondProductSpecificationResponseState.data!!)
+                    is Resource.Error -> {}
+                    else -> {}
+                }
+            }
         }
     }
 }
@@ -80,7 +109,7 @@ fun SpecItemList(specificationItem: SpecificationItem) {
     var expanded by rememberSaveable { mutableStateOf(false) }
 
     Card(
-        onClick = {expanded = !expanded},
+        onClick = { expanded = !expanded },
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -165,7 +194,11 @@ fun SpecTableItem(specificationTable: SpecificationTable, modifier: Modifier = M
 }
 
 @Composable
-fun SpecColumnItem(expanded: Boolean, specificationColumn: SpecificationColumn, modifier: Modifier = Modifier) {
+fun SpecColumnItem(
+    expanded: Boolean,
+    specificationColumn: SpecificationColumn,
+    modifier: Modifier = Modifier
+) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(expanded) {
@@ -239,25 +272,4 @@ private fun ProductDetailContent(
             SpecItemList(specification)
         }
     }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ProductDetailScreenPreview() {
-    ProductDetailScreen(
-        Resource.Success(
-            ProductSpecificationResponse(
-                productSpecification = ProductSpecification(
-                    "Xiaomi", "", listOf(
-                        ProductDetail("Screen", "6.38\" AMOLED - 1080 x 2400"),
-                        ProductDetail("SoC", "MediaTek Dimensity 920"),
-                        ProductDetail("Camera", "2 (64 MP + 2 MP)"),
-                        ProductDetail("Battery", "4500 mAh"),
-                        ProductDetail("OS", "Android 13"),
-                        ProductDetail("Weight", "173 grams (6.1 oz)"),
-                    )
-                ), productSpecifications = emptyList()
-            )
-        )
-    )
 }
