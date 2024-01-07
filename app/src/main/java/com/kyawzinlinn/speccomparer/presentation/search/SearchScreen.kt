@@ -68,8 +68,6 @@ fun SearchScreen(
         }
     }
 
-    Log.d("TAG", "Suggestions: $suggestions")
-
     Column(
         modifier = modifier.fillMaxSize()
     ) {
@@ -90,7 +88,7 @@ fun SearchScreen(
             )
 
             is Resource.Error -> {}
-            else -> {}
+            is Resource.Default -> { }
         }
 
         AnimatedVisibility(

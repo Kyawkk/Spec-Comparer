@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kyawzinlinn.speccomparer.data.repository.SearchRepository
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
+import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecification
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.utils.ProductType
 import com.kyawzinlinn.speccomparer.utils.Resource
@@ -53,7 +54,7 @@ class ProductViewModel @Inject constructor(
     fun resetProductDetails() {
         _uiState.update {
             it.copy(
-                firstProductDetails = Loading
+                firstProductDetails = Resource.Default
             )
         }
     }

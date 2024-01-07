@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.kyawzinlinn.speccomparer.presentation.ProductViewModel
+import com.kyawzinlinn.speccomparer.presentation.compare.CompareScreen
 import com.kyawzinlinn.speccomparer.presentation.detail.ProductDetailScreen
 import com.kyawzinlinn.speccomparer.presentation.home.HomeScreen
 import com.kyawzinlinn.speccomparer.presentation.search.SearchScreen
@@ -31,17 +32,19 @@ fun NavigationGraph(
                 updateTrailingIconStatus(false)
                 updateNavigateBackStatus(false)
             }
-            HomeScreen(onNavigateSearch = { type, title ->
-                viewModel.apply {
-                    resetSearchResults()
-                }
-                val data = type.name
-                navController.navigate("${ScreenRoute.Search.name}/$data/$title")
-            })
+            HomeScreen(
+                onNavigateSearch = { type, title ->
+                    val data = type.name
+                    navController.navigate("${ScreenRoute.Search.name}/$data/$title")
+                })
         }
 
         composable("${ScreenRoute.Search.name}/{data}/{title}") {
             val title = it?.arguments?.getString("title")
+
+            LaunchedEffect (Unit) {
+                viewModel.resetSearchResults()
+            }
 
             viewModel.apply {
                 updateTitle(title ?: "Search")
@@ -49,6 +52,7 @@ fun NavigationGraph(
                 updateNavigateBackStatus(true)
             }
             val type = ProductType.valueOf(it.arguments?.getString("data")!!)
+
             SearchScreen(
                 uiState = uiState,
                 onValueChange = { viewModel.getSuggestions(it, 8, type) },
@@ -62,7 +66,6 @@ fun NavigationGraph(
                         }"
                     )
                     viewModel.apply {
-                        resetProductDetails()
                         getFirstProductSpecifications(it.name, getProductType(it.content_type))
                     }
                 })
@@ -77,17 +80,31 @@ fun NavigationGraph(
                 updateNavigateBackStatus(true)
                 updateTrailingIconStatus(true)
             }
-            LaunchedEffect (Unit) {
+            LaunchedEffect(Unit) {
                 viewModel.showBottomSheet(false)
             }
 
             ProductDetailScreen(
                 uiState = uiState,
                 onDismissBottomSheet = { viewModel.showBottomSheet(false) },
-                onCompare = {firstDevice, secondDevice ->
-                    viewModel.compareProducts(firstDevice,secondDevice,productType)
+                onCompare = { firstDevice, secondDevice ->
+                    viewModel.compareProducts(firstDevice, secondDevice, productType)
+                    viewModel.showBottomSheet(false)
+                    navController.navigate("${ScreenRoute.Compare.name}/$firstDevice/$secondDevice")
                 }
             )
+        }
+
+        composable("${ScreenRoute.Compare.name}/{firstDevice}/{secondDevice}"){
+            val first = it.arguments?.getString("firstDevice")
+            val second = it.arguments?.getString("secondDevice")
+
+            viewModel.apply {
+                updateTitle("$first Vs $second")
+                updateTrailingIconStatus(false)
+            }
+
+            CompareScreen(compareResponse = uiState.compareDetails)
         }
     }
 }
