@@ -1,191 +1,185 @@
 package com.kyawzinlinn.speccomparer.data.remote.api.smartphone
 
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.CompareResponse
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.HeaderData
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.KeyDifference
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductDetail
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecification
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationItem
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationTable
-import com.kyawzinlinn.speccomparer.utils.CssParser
+import com.kyawzinlinn.speccomparer.domain.model.compare.CompareDetailResponse
+import com.kyawzinlinn.speccomparer.domain.model.compare.CompareKeyDifferences
+import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
+import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScore
+import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScoreBar
+import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScoreRow
+import com.kyawzinlinn.speccomparer.domain.model.compare.KeyDifference
 import com.kyawzinlinn.speccomparer.utils.JsoupConfig
 import com.kyawzinlinn.speccomparer.utils.ProductType
-import com.kyawzinlinn.speccomparer.utils.Resource
-import com.kyawzinlinn.speccomparer.utils.getAllChildren
 import com.kyawzinlinn.speccomparer.utils.toParameter
 import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
 
 object CompareApi {
-
-    fun getProductSpecification(
-        device: String,
-        type: ProductType
-    ): Resource<ProductSpecificationResponse> {
-        try {
-            val document = JsoupConfig.connectProductDetailsWebUrl(
-                device.toParameter(),
-                type
-            )
-
-            val cardElements = document.select("body>div.main-container>main>article>div.card")
-            val productDetails = getProductDetails(cardElements.get(0))
-            val specifications = mutableListOf<SpecificationItem>()
-
-            cardElements.forEach {
-                val specificationItem = extractDataFromCard(it)
-                if (specificationItem.specificationsColumn.isNotEmpty() || specificationItem.specificationsTable.isNotEmpty()) {
-                    specifications.add(specificationItem)
-                }
-            }
-            return Resource.Success(ProductSpecificationResponse(productDetails, specifications))
-        } catch (e: Exception) {
-            return Resource.Error(e.message ?: "")
-        }
-        return Resource.Loading()
-    }
-
-    private fun getProductDetails(element: Element): ProductSpecification {
-        val productName = element.select("div.card-block>div.card-head>h1").text()
-        val productImageUrl = element.select("div.card-block>div>img").attr("src")
-        val specElements = element.select("div.card-block>ul>li")
-        val productSpecifications = mutableListOf<ProductDetail>()
-        specElements.forEach {
-            val segments = it.text().split(":")
-            productSpecifications.add(
-                ProductDetail(
-                    segments.getOrNull(0) ?: "",
-                    segments.getOrNull(1) ?: "",
-                )
-            )
-        }
-
-        return ProductSpecification(productName, productImageUrl, productSpecifications)
-    }
-
-    fun compareProducts(
+    fun compareDevices(
         firstDevice: String,
         secondDevice: String,
         type: ProductType
     ): CompareResponse {
-        val document = JsoupConfig.connectCompareWebUrl(
-            "${firstDevice.toParameter()}-vs-${secondDevice.toParameter()}",
-            type
-        )
-        val cardElements = document.select("body>div.main-container>main>article>div.card")
-        val headerElement = cardElements.first()
+        val document = JsoupConfig.connectCompareWebUrl("${firstDevice.toParameter()}-vs-${secondDevice.toParameter()}", type)
 
-        val headerData = getHeaderData(headerElement)
-        var keyDifference = emptyList<KeyDifference>()
-        val compares = mutableListOf<SpecificationItem>()
+        val cards = document.select("div.card")
+        val compareDetailsList = mutableListOf<CompareDetailResponse>()
+        var keyDifferences: CompareKeyDifferences? = null
 
-        cardElements.forEach {
-            val specificationItem = extractDataFromCard(it)
-            val title = it.selectFirst("div.card-block>div.card-head")?.text()
+        val compareHeaderDetails = getCompareDevicesDetails(cards.get(0).select("div.compare-head"))
 
-            if (title?.toLowerCase() == "key differences") keyDifference = getKeyDifferences(it)
-
-            if (specificationItem.specificationsColumn.isNotEmpty() || specificationItem.specificationsTable.isNotEmpty()) {
-                compares.add(specificationItem)
-            }
-        }
-
-        return CompareResponse(
-            headerData = headerData,
-            keyDifferences = keyDifference,
-            compares = compares
-        )
-    }
-
-    private fun getHeaderData(element: Element?): HeaderData {
-        val imageElements = element?.select("div.card-block>div.compare-head")?.get(0)
-            ?.select("div.compare-head-item")
-        val titleElements = element?.select("div.card-block>div.compare-head")?.get(1)
-            ?.select("div.compare-head-item")
-        var firstImg = imageElements?.get(0)?.select("a>img")?.attr("src") ?: ""
-        var secondImg = imageElements?.getOrNull(1)?.select("a>img")?.attr("src") ?: ""
-        var firstTitle = titleElements?.get(0)?.select("a>div")?.text() ?: ""
-        var secondTitle = titleElements?.getOrNull(1)?.select("a>div")?.text() ?: ""
-        return HeaderData(firstTitle, secondTitle, firstImg, secondImg)
-    }
-
-    private fun getKeyDifferences(element: Element?): List<KeyDifference> {
-        val firstTitle = element?.select("div.title-h4")?.get(0)?.text() ?: ""
-        val secondTitle = element?.select("div.title-h4")?.getOrNull(1)?.text() ?: ""
-        val firstFacts = element?.select("ul")?.get(0)?.select("li")?.getAllChildren() ?: listOf()
-        val secondFacts =
-            element?.select("ul")?.getOrNull(1)?.select("li")?.getAllChildren() ?: listOf()
-        return listOf(
-            KeyDifference(firstTitle, firstFacts),
-            KeyDifference(secondTitle, secondFacts)
-        )
-    }
-
-    private fun extractDataFromCard(element: Element?): SpecificationItem {
-        val specificationColumns = mutableListOf<SpecificationColumn>()
-        val specificationTable = mutableListOf<SpecificationTable>()
-
-        val cardBlocks = element?.select("div.card-block")
-        val title = cardBlocks?.get(0)?.select("div.card-head")?.text() ?: ""
-        cardBlocks?.remove(cardBlocks?.get(0))
-        val tables = element?.select("table")
-
-        if (tables!!.isNotEmpty()) {
-            tables.forEach { table ->
-                extractDataFromTable(table).forEach {
-                    specificationTable.add(it)
+        cards.forEach {
+            val title = it.select("div.card-block>div.card-head>h2").text()
+            if (title.lowercase().equals("key differences")) {
+                keyDifferences = getKeyDifferences(it)
+            } else {
+                // handle spec data
+                val compareSpecificationDetails = getCompareSpecificationDetails(it)
+                if (compareSpecificationDetails?.scoreBars!!.isNotEmpty() || compareSpecificationDetails?.scoreRows!!.isNotEmpty()) {
+                    compareDetailsList.add(compareSpecificationDetails)
                 }
             }
         }
 
+        return CompareResponse(compareHeaderDetails, keyDifferences, compareDetailsList)
+    }
+
+    private fun getCompareSpecificationDetails(card: Element?): CompareDetailResponse? {
+        val cardBlocks = card?.select("div.card-block")
+        val tables = card?.select("table.specs-table")
+        val specTitle = cardBlocks?.get(0)?.select("div.card-head")?.text() ?: ""
+
+        val scoreBars = mutableListOf<CompareScoreBar?>()
+        val scoreRows = mutableListOf<CompareScoreRow?>()
+
         cardBlocks?.forEach {
-            specificationColumns.addAll(extractData(it))
+            scoreBars.addAll(getDataFromCompareScoreBars(it.selectFirst("div.two-columns")))
         }
 
-        return SpecificationItem(title, specificationColumns, specificationTable)
+        tables?.forEach {
+            scoreRows.addAll(getDataFromCompareTable(it))
+        }
+
+        return CompareDetailResponse(specTitle, scoreBars, scoreRows)
     }
 
-    private fun extractData(cardBlock: Element): List<SpecificationColumn> {
-        val columnBlock = cardBlock.select("div.two-columns")
-        val specifications = mutableListOf<SpecificationColumn>()
+    private fun getCompareDevicesDetails(compareHead: Elements?): CompareScore? {
+        try {
+            val compareHeadItems = compareHead?.get(0)?.select("div.compare-head-item")
+            val firstDevice = compareHeadItems?.get(0)
+            val secondDevice = compareHeadItems?.get(1)
+            val firstDeviceTitle = compareHead?.get(1)?.select("div.compare-head-item")?.get(0)
+                ?.select("a>div#first-phone")?.text() ?: ""
+            val secondDeviceTitle = compareHead?.get(1)?.select("div.compare-head-item")?.get(1)
+                ?.select("a>div#second-phone")?.text() ?: ""
 
-        if (columnBlock.isNotEmpty()) {
-            columnBlock.select("div.two-columns-item").forEach {
-                specifications.add(extractDataFromColumn(it))
+            val first = firstDevice?.select("div.compare-head-main-score")?.text() ?: ""
+            val second = secondDevice?.select("div.compare-head-main-score")?.text() ?: ""
+
+            val firstImgUrl = firstDevice?.select("img")?.attr("src") ?: ""
+            val secondImgUrl = secondDevice?.select("img")?.attr("src") ?: ""
+
+            return CompareScore(
+                first,
+                second,
+                firstImgUrl,
+                secondImgUrl,
+                firstDeviceTitle,
+                secondDeviceTitle
+            )
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
+    private fun getDataFromCompareTable(table: Element?): List<CompareScoreRow?> {
+        val specRows = table?.select("tbody>tr")
+        val compareScoreRows = mutableListOf<CompareScoreRow?>()
+
+        specRows?.forEach { specRow ->
+            val specName = specRow.select("td.cell-h").text()
+            val first = specRow.select("td.cell-s1").text()
+            val second = specRow.select("td.cell-s2").text()
+
+            compareScoreRows.add(CompareScoreRow(specName, first, second))
+        }
+
+        return compareScoreRows
+    }
+
+    private fun getDataFromCompareScoreBars(twoColumns: Element?): List<CompareScoreBar?> {
+        val twoColumnItems = twoColumns?.select("div.two-columns-item")
+        val scoreBarList = mutableListOf<CompareScoreBar?>()
+
+        try {
+            twoColumnItems?.forEach { twoColumnsItem ->
+                val scoreBar = extractScoreData(twoColumnsItem.select("div>div").first())
+                if (scoreBar?.name!!.isNotEmpty()) scoreBarList.add(scoreBar)
             }
-        }
-        return specifications
-    }
-
-    private fun extractDataFromTable(table: Element): List<SpecificationTable> {
-        val specifications = mutableListOf<SpecificationTable>()
-        val rows = table.select("tbody>tr")
-        rows.forEach {
-            val title = it.select("td.cell-h").text()
-            val first = it.select("td.cell-s").text()
-            specifications.add(SpecificationTable(title, first))
+        } catch (e: Exception) {
         }
 
-        return specifications
+        return scoreBarList
     }
 
-    private fun extractDataFromColumn(columnItem: Element): SpecificationColumn {
-        val scoreBar = columnItem.select("div.score-bar")
-        val title = scoreBar.select("div.score-bar-name").text() ?: ""
-        val valueElements = columnItem.select("div>div>div.mb")
+    private fun extractScoreData(twoColumnsItem: Element?): CompareScoreBar? {
+        val title = twoColumnsItem?.select("div>div.title-h4")?.text() ?: ""
+        val scoreElements = twoColumnsItem?.select("div>div.mb")
 
-        val firstStyle =
-            scoreBar.select("div.score-bar-line>div")?.attr("style")
-                ?.replace("%", "") ?: ""
+        val firstScoreResult =
+            scoreElements?.get(0)?.select("div.score-bar>div.score-bar-result>span")?.first()
+                ?.text() ?: ""
+        val firstScoreValue = scoreElements?.get(0)
+            ?.select("div.score-bar>div.score-bar-line>div.score-bar-line-filled")?.attr("style")
+            ?.replace("width:", "")?.trim() ?: ""
 
-        val progress = CssParser.parse(firstStyle, "width") ?: ""
+        val secondScoreResult =
+            scoreElements?.get(1)?.select("div.score-bar>div.score-bar-result>span")?.text() ?: ""
+        val secondScoreValue = scoreElements?.get(1)
+            ?.select("div.score-bar>div.score-bar-line>div.score-bar-line-filled")?.attr("style")
+            ?.replace("width:", "")?.trim() ?: ""
 
-        val value = scoreBar.select("div.score-bar-result").text() ?: ""
-        return SpecificationColumn(title, value, progress)
+        return CompareScoreBar(
+            title,
+            firstScoreResult,
+            firstScoreValue,
+            secondScoreResult,
+            secondScoreValue
+        )
+
+    }
+
+    private fun getKeyDifferences(card: Element): CompareKeyDifferences? {
+        try {
+            val cardBlocks = card.select("div.card-block")
+            val title = cardBlocks.get(0).select("div.card-head").text()
+
+            val titles = cardBlocks.get(1).select("div.title-h4")
+            val pros = cardBlocks.get(1).select("ul.proscons-list")
+
+            val firstTitle = titles.get(0).text()
+            val firstPros = pros.get(0).children().toList().map { it.text() }
+
+
+            val secondTitle = titles.get(1).text()
+            val secondPros = pros.get(1).children().toList().map { it.text() }
+
+            return CompareKeyDifferences(
+                title = title,
+                firstKeyDifference = KeyDifference(firstTitle, firstPros),
+                secondDifference = KeyDifference(secondTitle, secondPros)
+            )
+        } catch (e: Exception) {
+            return null
+        }
     }
 }
 
 fun main() {
-    CompareApi.getProductSpecification("Vivo iQOO Z7", ProductType.Smartphone)
+    println(
+        CompareApi.compareDevices(
+            "Acer Extensa 15",
+            "acer Aspire 3 Spin 14",
+            ProductType.Laptop
+        )
+    )
 }
