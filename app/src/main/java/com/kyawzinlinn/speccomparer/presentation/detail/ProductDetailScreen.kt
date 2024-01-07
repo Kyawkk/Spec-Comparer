@@ -2,6 +2,7 @@
 
 package com.kyawzinlinn.speccomparer.presentation.detail
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -47,10 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecification
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationItem
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationTable
+import com.kyawzinlinn.speccomparer.presentation.UiState
 import com.kyawzinlinn.speccomparer.ui.components.CompareBottomSheet
 import com.kyawzinlinn.speccomparer.ui.components.LoadingScreen
 import com.kyawzinlinn.speccomparer.utils.ImageUrlBuilder
@@ -58,44 +61,60 @@ import com.kyawzinlinn.speccomparer.utils.Resource
 
 @Composable
 fun ProductDetailScreen(
-    showBottomSheet: Boolean,
-    isCompareState: Boolean,
-    onCompare: (String,String) -> Unit,
+    uiState: UiState,
+    onCompare: (String, String) -> Unit,
     onDismissBottomSheet: () -> Unit,
-    firstProductSpecificationResponseState: Resource<ProductSpecificationResponse>,
-    secondProductSpecificationResponseState: Resource<ProductSpecificationResponse>,
     modifier: Modifier = Modifier.padding(16.dp)
 ) {
     var showBottomSheetValue by remember { mutableStateOf(false) }
+    var firstProductDetails by remember { mutableStateOf(ProductSpecificationResponse(ProductSpecification(),
+        emptyList()
+    )) }
 
-    LaunchedEffect(showBottomSheet) {
-        showBottomSheetValue = showBottomSheet
+
+    var compareUiState by remember {
+        mutableStateOf(UiState())
+    }
+
+    LaunchedEffect(uiState.compareDetails) {
+        compareUiState = uiState
+        Log.d("TAG", "ProductDetailScreen: ${uiState.compareDetails}")
+    }
+
+    LaunchedEffect (uiState.firstProductDetails) {
+        when (uiState.firstProductDetails) {
+            is Resource.Success -> {firstProductDetails = uiState.firstProductDetails.data}
+            else -> {}
+        }
     }
 
     CompareBottomSheet(
-        firstDevice = firstProductSpecificationResponseState.data?.productSpecification?.productName
+        firstDevice = firstProductDetails.productSpecification?.productName
             ?: "",
-        showBottomSheet = showBottomSheet,
+        showBottomSheet = uiState.showBottomSheet,
         onCompare = onCompare,
         onDismissBottomSheet = onDismissBottomSheet
     )
 
-    Row (modifier = modifier.fillMaxSize()) {
-        Column(modifier = Modifier.weight(if(isCompareState) 0.5f else 1f)) {
-            when (firstProductSpecificationResponseState) {
+    Row(modifier = modifier.fillMaxSize()) {
+        Column(modifier = Modifier.weight(if (uiState.isCompareState) 0.5f else 1f)) {
+            when (uiState.firstProductDetails) {
                 is Resource.Loading -> LoadingScreen()
-                is Resource.Success -> ProductDetailContent(firstProductSpecificationResponseState.data!!)
+                is Resource.Success -> ProductDetailContent(uiState.firstProductDetails.data!!)
                 is Resource.Error -> {}
                 else -> {}
             }
         }
 
-        if (isCompareState) {
+        if (uiState.isCompareState) {
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(0.5f)) {
-                when (secondProductSpecificationResponseState) {
+                when (uiState.secondProductDetails) {
                     is Resource.Loading -> LoadingScreen()
-                    is Resource.Success -> ProductDetailContent(secondProductSpecificationResponseState.data!!)
+                    is Resource.Success -> ProductDetailContent(
+                        (uiState.secondProductDetails).data!!
+                    )
+
                     is Resource.Error -> {}
                     else -> {}
                 }

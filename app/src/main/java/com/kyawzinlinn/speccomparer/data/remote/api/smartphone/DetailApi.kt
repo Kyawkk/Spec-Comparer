@@ -43,7 +43,7 @@ object DetailApi {
         } catch (e: Exception) {
             return Resource.Error(e.message ?: "")
         }
-        return Resource.Loading()
+        return Resource.Loading
     }
 
     private fun getProductDetails(element: Element): ProductSpecification {

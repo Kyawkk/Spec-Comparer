@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kyawzinlinn.speccomparer.data.repository.SearchRepository
 import com.kyawzinlinn.speccomparer.domain.model.Product
+import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.utils.ProductType
 import com.kyawzinlinn.speccomparer.utils.Resource
@@ -52,7 +53,7 @@ class ProductViewModel @Inject constructor(
     fun resetProductDetails() {
         _uiState.update {
             it.copy(
-                firstProductDetails = Loading()
+                firstProductDetails = Loading
             )
         }
     }
@@ -60,7 +61,7 @@ class ProductViewModel @Inject constructor(
     fun resetSearchResults() {
         _uiState.update {
             it.copy(
-                searchResults = Resource.Default()
+                searchResults = Resource.Default
             )
         }
     }
@@ -104,6 +105,15 @@ class ProductViewModel @Inject constructor(
             }
         }
     }
+
+    fun compareProducts (firstDevice: String, secondDevice: String, type: ProductType) {
+        viewModelScope.launch (Dispatchers.IO) {
+            val compareDetails = searchRepository.compareProducts(firstDevice, secondDevice, type)
+            _uiState.update {
+                it.copy(compareDetails = compareDetails)
+            }
+        }
+    }
 }
 
 data class UiState(
@@ -112,8 +122,9 @@ data class UiState(
     val showTrailingIcon : Boolean = false,
     val showBottomSheet : Boolean = false,
     val isCompareState: Boolean = false,
-    val firstProductDetails : Resource<ProductSpecificationResponse> = Loading(),
-    val secondProductDetails : Resource<ProductSpecificationResponse> = Loading(),
-    val searchResults : Resource<List<Product>> = Resource.Default(),
-    val suggestions : Resource<List<Product>> = Resource.Default(),
+    val firstProductDetails : Resource<ProductSpecificationResponse> = Resource.Loading,
+    val secondProductDetails : Resource<ProductSpecificationResponse> = Resource.Loading,
+    val compareDetails: Resource<CompareResponse> = Resource.Loading,
+    val searchResults : Resource<List<Product>> = Resource.Default,
+    val suggestions : Resource<List<Product>> = Resource.Default,
 )

@@ -37,14 +37,14 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kyawzinlinn.speccomparer.domain.model.Product
+import com.kyawzinlinn.speccomparer.presentation.UiState
 import com.kyawzinlinn.speccomparer.ui.components.LoadingScreen
 import com.kyawzinlinn.speccomparer.ui.components.SearchBar
 import com.kyawzinlinn.speccomparer.utils.Resource
 
 @Composable
 fun SearchScreen(
-    suggestionsState: Resource<List<Product>>,
-    searchResultsState: Resource<List<Product>>,
+    uiState: UiState,
     onValueChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     onProductItemClick: (Product) -> Unit,
@@ -55,9 +55,17 @@ fun SearchScreen(
     var searchResults by rememberSaveable { mutableStateOf(listOf<Product>()) }
     var suggestions by rememberSaveable { mutableStateOf(listOf<Product>()) }
 
-    LaunchedEffect(searchResultsState.data, suggestionsState.data) {
-        searchResults = searchResultsState.data ?: emptyList()
-        suggestions = suggestionsState.data ?: emptyList()
+    LaunchedEffect(uiState.searchResults, uiState.suggestions) {
+
+        when (uiState.searchResults) {
+            is Resource.Success -> {searchResults = uiState.searchResults.data}
+            else -> {}
+        }
+
+        when (uiState.suggestions) {
+            is Resource.Success -> {suggestions = uiState.suggestions.data}
+            else -> {}
+        }
     }
 
     Log.d("TAG", "Suggestions: $suggestions")
@@ -75,7 +83,7 @@ fun SearchScreen(
             onSearch = onSearch
         )
 
-        when (searchResultsState) {
+        when (uiState.searchResults) {
             is Resource.Loading -> LoadingScreen()
             is Resource.Success -> SearchResultList(
                 searchResults, onProductItemClick = onProductItemClick

@@ -9,6 +9,7 @@ import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScoreRow
 import com.kyawzinlinn.speccomparer.domain.model.compare.KeyDifference
 import com.kyawzinlinn.speccomparer.utils.JsoupConfig
 import com.kyawzinlinn.speccomparer.utils.ProductType
+import com.kyawzinlinn.speccomparer.utils.Resource
 import com.kyawzinlinn.speccomparer.utils.toParameter
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
@@ -18,29 +19,43 @@ object CompareApi {
         firstDevice: String,
         secondDevice: String,
         type: ProductType
-    ): CompareResponse {
-        val document = JsoupConfig.connectCompareWebUrl("${firstDevice.toParameter()}-vs-${secondDevice.toParameter()}", type)
+    ): Resource<CompareResponse> {
 
-        val cards = document.select("div.card")
-        val compareDetailsList = mutableListOf<CompareDetailResponse>()
-        var keyDifferences: CompareKeyDifferences? = null
+        try {
+            val document = JsoupConfig.connectCompareWebUrl(
+                "${firstDevice.toParameter()}-vs-${secondDevice.toParameter()}",
+                type
+            )
 
-        val compareHeaderDetails = getCompareDevicesDetails(cards.get(0).select("div.compare-head"))
+            val cards = document.select("div.card")
+            val compareDetailsList = mutableListOf<CompareDetailResponse>()
+            var keyDifferences: CompareKeyDifferences? = null
 
-        cards.forEach {
-            val title = it.select("div.card-block>div.card-head>h2").text()
-            if (title.lowercase().equals("key differences")) {
-                keyDifferences = getKeyDifferences(it)
-            } else {
-                // handle spec data
-                val compareSpecificationDetails = getCompareSpecificationDetails(it)
-                if (compareSpecificationDetails?.scoreBars!!.isNotEmpty() || compareSpecificationDetails?.scoreRows!!.isNotEmpty()) {
-                    compareDetailsList.add(compareSpecificationDetails)
+            val compareHeaderDetails = getCompareDevicesDetails(cards.get(0).select("div.compare-head"))
+
+            cards.forEach {
+                val title = it.select("div.card-block>div.card-head>h2").text()
+                if (title.lowercase().equals("key differences")) {
+                    keyDifferences = getKeyDifferences(it)
+                } else {
+                    // handle spec data
+                    val compareSpecificationDetails = getCompareSpecificationDetails(it)
+                    if (compareSpecificationDetails?.scoreBars!!.isNotEmpty() || compareSpecificationDetails?.scoreRows!!.isNotEmpty()) {
+                        compareDetailsList.add(compareSpecificationDetails)
+                    }
                 }
             }
-        }
 
-        return CompareResponse(compareHeaderDetails, keyDifferences, compareDetailsList)
+            return Resource.Success(
+                CompareResponse(
+                    compareHeaderDetails,
+                    keyDifferences,
+                    compareDetailsList
+                )
+            )
+        } catch (e: Exception) {
+            return Resource.Error(e.message.toString())
+        }
     }
 
     private fun getCompareSpecificationDetails(card: Element?): CompareDetailResponse? {
@@ -87,6 +102,7 @@ object CompareApi {
                 secondDeviceTitle
             )
         } catch (e: Exception) {
+            e.printStackTrace()
             return null
         }
     }
@@ -116,6 +132,7 @@ object CompareApi {
                 if (scoreBar?.name!!.isNotEmpty()) scoreBarList.add(scoreBar)
             }
         } catch (e: Exception) {
+            e.printStackTrace()
         }
 
         return scoreBarList
@@ -169,17 +186,31 @@ object CompareApi {
                 secondDifference = KeyDifference(secondTitle, secondPros)
             )
         } catch (e: Exception) {
+            e.printStackTrace()
             return null
         }
     }
 }
 
 fun main() {
-    println(
-        CompareApi.compareDevices(
-            "Acer Extensa 15",
-            "acer Aspire 3 Spin 14",
-            ProductType.Laptop
-        )
+    val state = CompareApi.compareDevices(
+        "Acer Extensa 15",
+        "acer Aspire 3 Spin 14",
+        ProductType.Laptop
     )
+
+    when (state) {
+        is Resource.Loading -> {
+            println("Loading...")
+        }
+        is Resource.Success -> {
+            println(state.data)
+        }
+        is Resource.Error -> {
+            println(state.message)
+        }
+        else -> {
+            println("else")
+        }
+    }
 }

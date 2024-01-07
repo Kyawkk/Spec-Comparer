@@ -1,6 +1,7 @@
 package com.kyawzinlinn.speccomparer.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -49,8 +50,7 @@ fun NavigationGraph(
             }
             val type = ProductType.valueOf(it.arguments?.getString("data")!!)
             SearchScreen(
-                suggestionsState = uiState.suggestions,
-                searchResultsState = uiState.searchResults,
+                uiState = uiState,
                 onValueChange = { viewModel.getSuggestions(it, 8, type) },
                 onSearch = { viewModel.search(it, 500, type) },
                 onProductItemClick = {
@@ -77,18 +77,15 @@ fun NavigationGraph(
                 updateNavigateBackStatus(true)
                 updateTrailingIconStatus(true)
             }
+            LaunchedEffect (Unit) {
+                viewModel.showBottomSheet(false)
+            }
 
             ProductDetailScreen(
-                firstProductSpecificationResponseState = uiState.firstProductDetails,
-                secondProductSpecificationResponseState = uiState.secondProductDetails,
-                isCompareState = uiState.isCompareState,
-                showBottomSheet = uiState.showBottomSheet,
+                uiState = uiState,
                 onDismissBottomSheet = { viewModel.showBottomSheet(false) },
                 onCompare = {firstDevice, secondDevice ->
-                    viewModel.apply {
-                        getFirstProductSpecifications(firstDevice,productType)
-                        getSecondProductSpecifications(secondDevice,productType)
-                    }
+                    viewModel.compareProducts(firstDevice,secondDevice,productType)
                 }
             )
         }

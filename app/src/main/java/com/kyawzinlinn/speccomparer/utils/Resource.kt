@@ -1,8 +1,8 @@
 package com.kyawzinlinn.speccomparer.utils
 
-sealed class Resource <T> (val data: T?) {
-    class Default<T>: Resource<T>(data = null)
-    class Loading<T>: Resource<T>(data = null)
-    data class Success<T> (val da: T): Resource<T>(data = da)
-    data class Error<T>(val message: String) : Resource<T>(data = null)
+sealed class Resource <out T> {
+    object Default: Resource<Nothing>()
+    object Loading: Resource<Nothing>()
+    data class Success<T> (val data: T): Resource<T>()
+    data class Error<T>(val message: String) : Resource<T>()
 }
