@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.kyawzinlinn.speccomparer.domain.model.Product
 
 @Composable
 fun CompareBottomSheet(
@@ -55,6 +56,8 @@ fun CompareBottomSheet(
 
 @Composable
 private fun BottomSheetContent(
+    isSearching: Boolean,
+    suggestions: List<Product>,
     firstDevice: String,
     onSearch: (String, String) -> Unit,
     modifier: Modifier = Modifier
@@ -69,11 +72,8 @@ private fun BottomSheetContent(
             onValueChange = { firstDeviceInput = it }
         )
         Spacer(modifier = Modifier.height(16.dp))
-        SearchDeviceItem(
-            title = "Second Device",
-            inputString = secondDeviceInput,
-            onValueChange = { secondDeviceInput = it }
-        )
+        Text(text = "Second Device", style = MaterialTheme.typography.titleSmall)
+        AutoCompleteSearchField(isSearching = isSearching, suggestions = suggestions, onValueChange = {})
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(

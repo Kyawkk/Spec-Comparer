@@ -7,7 +7,16 @@ data class Product(
     val content_type: String,
     val name: String,
     val imageUrl : String = "",
-)
+) {
+    fun doesMatchSearchQuery(query: String): Boolean {
+        val matchCombinations = listOf(
+            "$name"
+        )
+        return matchCombinations.any {
+            it.contains(query, ignoreCase = true)
+        }
+    }
+}
 
 fun List<Product>.addImageLinks() : List<Product> {
     return map {

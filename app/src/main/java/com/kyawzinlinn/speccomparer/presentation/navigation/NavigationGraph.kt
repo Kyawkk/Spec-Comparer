@@ -41,6 +41,8 @@ fun NavigationGraph(
 
         composable("${ScreenRoute.Search.name}/{data}/{title}") {
             val title = it?.arguments?.getString("title")
+            val suggestions by viewModel.suggestions.collectAsState()
+            val isSearching by viewModel.isSearching.collectAsState()
 
             LaunchedEffect (Unit) {
                 viewModel.resetSearchResults()
@@ -54,6 +56,8 @@ fun NavigationGraph(
             val type = ProductType.valueOf(it.arguments?.getString("data")!!)
 
             SearchScreen(
+                suggestions = suggestions,
+                isSearching = isSearching,
                 uiState = uiState,
                 onValueChange = { viewModel.getSuggestions(it, 8, type) },
                 onSearch = { viewModel.search(it, 500, type) },

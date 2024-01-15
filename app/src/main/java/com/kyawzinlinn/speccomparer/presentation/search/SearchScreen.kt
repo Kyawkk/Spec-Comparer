@@ -2,7 +2,6 @@
 
 package com.kyawzinlinn.speccomparer.presentation.search
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -10,6 +9,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,7 +21,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,22 +51,22 @@ fun SearchScreen(
     onValueChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     onProductItemClick: (Product) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    suggestions: List<Product>,
+    isSearching: Boolean
 ) {
     var showSuggestions by rememberSaveable { mutableStateOf(false) }
     var value by rememberSaveable { mutableStateOf("") }
     var searchResults by rememberSaveable { mutableStateOf(listOf<Product>()) }
-    var suggestions by rememberSaveable { mutableStateOf(listOf<Product>()) }
+    //var suggestions by rememberSaveable { mutableStateOf(listOf<Product>()) }
 
-    LaunchedEffect(uiState.searchResults, uiState.suggestions) {
+    LaunchedEffect(uiState.searchResults) {
 
         when (uiState.searchResults) {
-            is Resource.Success -> {searchResults = uiState.searchResults.data}
-            else -> {}
-        }
+            is Resource.Success -> {
+                searchResults = uiState.searchResults.data
+            }
 
-        when (uiState.suggestions) {
-            is Resource.Success -> {suggestions = uiState.suggestions.data}
             else -> {}
         }
     }
@@ -81,6 +84,38 @@ fun SearchScreen(
             onSearch = onSearch
         )
 
+        if (isSearching) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+        } else {
+
+            Box (modifier = Modifier.padding(horizontal = 16.dp)){
+                DropdownMenu(
+                    expanded = suggestions.isNotEmpty(),
+                    onDismissRequest = { /*TODO*/ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    suggestions.forEach {
+                        DropdownMenuItem(text = { Text(text = it.name) }, onClick = { /*TODO*/ })
+                    }
+                }
+            }
+            
+            SuggestionList(
+                suggestions = suggestions,
+                onSuggestionItemClick = {
+                    value = it
+                    onSearch(it)
+                    showSuggestions = false
+                }
+            )
+        }
+
         when (uiState.searchResults) {
             is Resource.Loading -> LoadingScreen()
             is Resource.Success -> SearchResultList(
@@ -88,7 +123,7 @@ fun SearchScreen(
             )
 
             is Resource.Error -> {}
-            is Resource.Default -> { }
+            is Resource.Default -> {}
         }
 
         AnimatedVisibility(
@@ -102,14 +137,7 @@ fun SearchScreen(
                 )
             )
         ) {
-            SuggestionList(
-                suggestions = suggestions,
-                onSuggestionItemClick = {
-                    value = it
-                    onSearch(it)
-                    showSuggestions = false
-                }
-            )
+
         }
     }
 }
@@ -161,7 +189,9 @@ private fun SuggestionList(
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(suggestions) {
