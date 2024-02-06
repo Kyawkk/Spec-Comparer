@@ -2,7 +2,6 @@
 
 package com.kyawzinlinn.speccomparer.presentation.detail
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -48,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecification
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
@@ -62,15 +62,16 @@ import com.kyawzinlinn.speccomparer.utils.Resource
 @Composable
 fun ProductDetailScreen(
     uiState: UiState,
+    isSearching: Boolean,
     onCompare: (String, String) -> Unit,
     onDismissBottomSheet: () -> Unit,
-    modifier: Modifier = Modifier.padding(16.dp)
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier.padding(16.dp),
+    suggestions: List<Product>
 ) {
-    var showBottomSheetValue by remember { mutableStateOf(false) }
     var firstProductDetails by remember { mutableStateOf(ProductSpecificationResponse(ProductSpecification(),
         emptyList()
     )) }
-
 
     var compareUiState by remember {
         mutableStateOf(UiState())
@@ -78,19 +79,20 @@ fun ProductDetailScreen(
 
     LaunchedEffect(uiState.compareDetails) {
         compareUiState = uiState
-        Log.d("TAG", "ProductDetailScreen: ${uiState.compareDetails}")
     }
 
-    LaunchedEffect (uiState.firstProductDetails) {
-        when (uiState.firstProductDetails) {
-            is Resource.Success -> {firstProductDetails = uiState.firstProductDetails.data}
+    LaunchedEffect (uiState.productDetails) {
+        when (uiState.productDetails) {
+            is Resource.Success -> {firstProductDetails = uiState.productDetails.data}
             else -> {}
         }
     }
 
     CompareBottomSheet(
-        firstDevice = firstProductDetails.productSpecification?.productName
-            ?: "",
+        suggestions = suggestions,
+        isSearching = isSearching,
+        onValueChange = onValueChange,
+        firstDevice = firstProductDetails.productSpecification?.productName ?: "",
         showBottomSheet = uiState.showBottomSheet,
         onCompare = onCompare,
         onDismissBottomSheet = onDismissBottomSheet
@@ -98,31 +100,29 @@ fun ProductDetailScreen(
 
     Row(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.weight(if (uiState.isCompareState) 0.5f else 1f)) {
-            when (uiState.firstProductDetails) {
+            when (uiState.productDetails) {
                 is Resource.Loading -> LoadingScreen()
-                is Resource.Success -> ProductDetailContent(uiState.firstProductDetails.data!!)
+                is Resource.Success -> ProductDetailContent(uiState.productDetails.data)
                 is Resource.Error -> {}
                 else -> {}
             }
         }
 
-        if (uiState.isCompareState) {
+        /*if (uiState.isCompareState) {
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(0.5f)) {
                 when (uiState.secondProductDetails) {
                     is Resource.Loading -> LoadingScreen()
-                    is Resource.Success -> ProductDetailContent(
-                        (uiState.secondProductDetails).data!!
-                    )
-
+                    is Resource.Success -> ProductDetailContent((uiState.secondProductDetails).data)
                     is Resource.Error -> {}
                     else -> {}
                 }
             }
-        }
+        }*/
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpecItemList(specificationItem: SpecificationItem) {
     var expanded by rememberSaveable { mutableStateOf(false) }

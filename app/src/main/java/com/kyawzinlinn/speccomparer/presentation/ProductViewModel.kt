@@ -1,5 +1,6 @@
 package com.kyawzinlinn.speccomparer.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kyawzinlinn.speccomparer.data.repository.SearchRepository
@@ -10,15 +11,13 @@ import com.kyawzinlinn.speccomparer.utils.ProductType
 import com.kyawzinlinn.speccomparer.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.forEach
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -38,11 +37,12 @@ class ProductViewModel @Inject constructor(
     private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
 
+    private var searchJob: Job? = null
+
     private val _suggestions = MutableStateFlow(listOf<Product>())
     val suggestions: StateFlow<List<Product>> = searchText
         .combine(_suggestions) { query, suggestions ->
-            if (query.isBlank()) suggestions
-            else suggestions.filter { it.doesMatchSearchQuery(query) }
+            suggestions
         }
         .stateIn(
             viewModelScope,
@@ -51,13 +51,13 @@ class ProductViewModel @Inject constructor(
         )
 
 
-    fun updateNavigateBackStatus(canNavigateBack: Boolean) {
+    fun updateNavigateBackButtonVisibility(canNavigateBack: Boolean) {
         _uiState.update {
             it.copy(canNavigateBack = canNavigateBack)
         }
     }
 
-    fun updateTrailingIconStatus(showTrailingIcon: Boolean) {
+    fun updateTrailingIconVisibility(showTrailingIcon: Boolean) {
         _uiState.update {
             it.copy(showTrailingIcon = showTrailingIcon)
         }
@@ -83,7 +83,17 @@ class ProductViewModel @Inject constructor(
         }
     }
 
+    fun resetProductSpecifications() {
+        _uiState.update {
+            it.copy(
+                productDetails = Resource.Default
+            )
+        }
+    }
+
     fun search(query: String, limit: Int, productType: ProductType) {
+        _suggestions.value = emptyList()
+        _uiState.update { it.copy(productDetails = Resource.Loading) }
         viewModelScope.launch {
             _searchText.value = ""
             _uiState.update {
@@ -93,12 +103,14 @@ class ProductViewModel @Inject constructor(
     }
 
     fun getSuggestions(query: String, limit: Int, productType: ProductType) {
-        viewModelScope.launch {
+        _suggestions.value = emptyList()
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
             _isSearching.update { true }
             val searchResponse = searchRepository.search(query, limit, productType)
             when (searchResponse) {
                 is Resource.Success -> {
-                    _suggestions.value = searchResponse.data
+                    _uiState.update { it.copy(suggestions = searchResponse.data) }
                     delay(300)
                     _isSearching.update { false }
                 }
@@ -114,7 +126,7 @@ class ProductViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     isCompareState = false,
-                    firstProductDetails = productDetails
+                    productDetails = productDetails
                 )
             }
         }
@@ -148,8 +160,9 @@ data class UiState(
     val showTrailingIcon: Boolean = false,
     val showBottomSheet: Boolean = false,
     val isCompareState: Boolean = false,
-    val firstProductDetails: Resource<ProductSpecificationResponse> = Resource.Loading,
+    val productDetails: Resource<ProductSpecificationResponse> = Resource.Loading,
     val secondProductDetails: Resource<ProductSpecificationResponse> = Resource.Loading,
+    val suggestions: List<Product> = emptyList(),
     val compareDetails: Resource<CompareResponse> = Resource.Loading,
     val searchResults: Resource<List<Product>> = Resource.Default,
 )

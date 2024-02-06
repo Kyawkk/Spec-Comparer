@@ -21,6 +21,7 @@ fun NavigationGraph(
     viewModel: ProductViewModel, navController: NavHostController, modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val suggestions by viewModel.suggestions.collectAsState()
 
     NavHost(
         navController = navController, modifier = modifier, startDestination = ScreenRoute.Home.name
@@ -29,8 +30,8 @@ fun NavigationGraph(
         composable(ScreenRoute.Home.name) {
             viewModel.apply {
                 updateTitle("Home")
-                updateTrailingIconStatus(false)
-                updateNavigateBackStatus(false)
+                updateTrailingIconVisibility(false)
+                updateNavigateBackButtonVisibility(false)
             }
             HomeScreen(
                 onNavigateSearch = { type, title ->
@@ -40,27 +41,32 @@ fun NavigationGraph(
         }
 
         composable("${ScreenRoute.Search.name}/{data}/{title}") {
-            val title = it?.arguments?.getString("title")
-            val suggestions by viewModel.suggestions.collectAsState()
+            val title = it.arguments?.getString("title")
             val isSearching by viewModel.isSearching.collectAsState()
 
-            LaunchedEffect (Unit) {
-                viewModel.resetSearchResults()
+            LaunchedEffect(Unit) {
+                viewModel.apply {
+                    resetSearchResults()
+                    resetProductSpecifications()
+                }
             }
 
             viewModel.apply {
                 updateTitle(title ?: "Search")
-                updateTrailingIconStatus(false)
-                updateNavigateBackStatus(true)
+                updateTrailingIconVisibility(false)
+                updateNavigateBackButtonVisibility(true)
             }
             val type = ProductType.valueOf(it.arguments?.getString("data")!!)
 
             SearchScreen(
-                suggestions = suggestions,
+                suggestions = uiState.suggestions,
                 isSearching = isSearching,
                 uiState = uiState,
-                onValueChange = { viewModel.getSuggestions(it, 8, type) },
+                onValueChange = { if (it.isNotEmpty()) viewModel.getSuggestions(it, 8, type) },
                 onSearch = { viewModel.search(it, 500, type) },
+                onSuggestionItemClick = {
+                    viewModel.search(it, 500, type)
+                },
                 onProductItemClick = {
                     navController.navigate(
                         "${ScreenRoute.Details.name}/${it.name}/${
@@ -78,11 +84,12 @@ fun NavigationGraph(
         composable("${ScreenRoute.Details.name}/{product}/{productType}") {
             val product = it.arguments?.getString("product") ?: ""
             val productType = ProductType.valueOf(it.arguments?.getString("productType") ?: "")
+            val isSearching by viewModel.isSearching.collectAsState()
 
             viewModel.apply {
                 updateTitle(product)
-                updateNavigateBackStatus(true)
-                updateTrailingIconStatus(true)
+                updateNavigateBackButtonVisibility(true)
+                updateTrailingIconVisibility(true)
             }
             LaunchedEffect(Unit) {
                 viewModel.showBottomSheet(false)
@@ -90,6 +97,11 @@ fun NavigationGraph(
 
             ProductDetailScreen(
                 uiState = uiState,
+                isSearching = isSearching,
+                suggestions = uiState.suggestions,
+                onValueChange = {
+                    viewModel.getSuggestions(it, 8, productType)
+                },
                 onDismissBottomSheet = { viewModel.showBottomSheet(false) },
                 onCompare = { firstDevice, secondDevice ->
                     viewModel.compareProducts(firstDevice, secondDevice, productType)
@@ -99,13 +111,13 @@ fun NavigationGraph(
             )
         }
 
-        composable("${ScreenRoute.Compare.name}/{firstDevice}/{secondDevice}"){
+        composable("${ScreenRoute.Compare.name}/{firstDevice}/{secondDevice}") {
             val first = it.arguments?.getString("firstDevice")
             val second = it.arguments?.getString("secondDevice")
 
             viewModel.apply {
                 updateTitle("$first Vs $second")
-                updateTrailingIconStatus(false)
+                updateTrailingIconVisibility(false)
             }
 
             CompareScreen(compareResponse = uiState.compareDetails)

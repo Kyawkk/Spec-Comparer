@@ -56,19 +56,13 @@ dependencies {
     val retrofit_version = "2.9.0"
     val nav_version = "2.7.4"
 
-    implementation("com.squareup.retrofit2:retrofit:$retrofit_version")
-    implementation("com.squareup.retrofit2:converter-gson:$retrofit_version")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
-    implementation("androidx.navigation:navigation-compose:$nav_version")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.0.0")
-    implementation("com.google.dagger:hilt-android:2.46")
-    kapt("com.google.dagger:hilt-android-compiler:2.46")
-    implementation("io.coil-kt:coil-compose:2.4.0")
-    implementation ("org.jsoup:jsoup:1.16.2")
-    // https://mvnrepository.com/artifact/org.htmlunit/htmlunit-cssparser
-    implementation("org.htmlunit:htmlunit-cssparser:3.7.0")
-    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
+    retrofit()
+    compose()
+    hilt()
+    coil()
+    jsoup()
+    parser()
+    materialExtendedIcons()
 
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)

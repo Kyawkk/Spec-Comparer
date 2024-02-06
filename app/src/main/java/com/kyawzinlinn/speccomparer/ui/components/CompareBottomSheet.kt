@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package com.kyawzinlinn.speccomparer.ui.components
 
@@ -28,9 +28,12 @@ import com.kyawzinlinn.speccomparer.domain.model.Product
 fun CompareBottomSheet(
     firstDevice: String,
     showBottomSheet: Boolean,
+    onValueChange: (String) -> Unit,
     onCompare: (String, String) -> Unit,
     onDismissBottomSheet: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    suggestions: List<Product>,
+    isSearching: Boolean
 ) {
     var showBottomSheetValue by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
@@ -48,7 +51,7 @@ fun CompareBottomSheet(
                 modifier = modifier
                     .fillMaxWidth()
             ) {
-                BottomSheetContent(firstDevice = firstDevice, onSearch = onCompare)
+                BottomSheetContent(firstDevice = firstDevice, onSearch = onCompare, isSearching = isSearching, suggestions = suggestions, onValueChange = onValueChange)
             }
         }
     }
@@ -59,6 +62,7 @@ private fun BottomSheetContent(
     isSearching: Boolean,
     suggestions: List<Product>,
     firstDevice: String,
+    onValueChange: (String) -> Unit,
     onSearch: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -73,7 +77,7 @@ private fun BottomSheetContent(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = "Second Device", style = MaterialTheme.typography.titleSmall)
-        AutoCompleteSearchField(isSearching = isSearching, suggestions = suggestions, onValueChange = {})
+        AutoCompleteSearchField(suggestions = suggestions, onSearch = {}, onValueChange = onValueChange)
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(
@@ -81,7 +85,7 @@ private fun BottomSheetContent(
                 .fillMaxWidth()
                 .padding(16.dp),
             onClick = { onSearch(firstDeviceInput, secondDeviceInput) }) {
-            Text(text = "compare".toUpperCase())
+            Text(text = "compare".uppercase())
         }
     }
 
@@ -103,11 +107,4 @@ fun SearchDeviceItem(
         Spacer(modifier = Modifier.height(8.dp))
         SearchBar(input = inputString, onValueChange = onValueChange, onSearch = {})
     }
-}
-
-@Composable
-@Preview(showSystemUi = true, showBackground = true)
-fun CompareBottomSheetPreview() {
-    BottomSheetContent(firstDevice = "Redmi Note 11 Pro Plus", onSearch = {first, second -> })
-    //CompareBottomSheet(onCompareClick = {}, onDismissBottomSheet = {}, showBottomSheet = true)
 }

@@ -1,13 +1,19 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class
+)
 
 package com.kyawzinlinn.speccomparer.presentation.search
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,16 +37,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.presentation.UiState
+import com.kyawzinlinn.speccomparer.ui.components.AutoCompleteSearchField
 import com.kyawzinlinn.speccomparer.ui.components.LoadingScreen
 import com.kyawzinlinn.speccomparer.ui.components.SearchBar
 import com.kyawzinlinn.speccomparer.utils.Resource
@@ -51,6 +60,7 @@ fun SearchScreen(
     onValueChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     onProductItemClick: (Product) -> Unit,
+    onSuggestionItemClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     suggestions: List<Product>,
     isSearching: Boolean
@@ -58,15 +68,14 @@ fun SearchScreen(
     var showSuggestions by rememberSaveable { mutableStateOf(false) }
     var value by rememberSaveable { mutableStateOf("") }
     var searchResults by rememberSaveable { mutableStateOf(listOf<Product>()) }
-    //var suggestions by rememberSaveable { mutableStateOf(listOf<Product>()) }
+    var showSuggestionDropdown by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
 
     LaunchedEffect(uiState.searchResults) {
-
         when (uiState.searchResults) {
             is Resource.Success -> {
                 searchResults = uiState.searchResults.data
             }
-
             else -> {}
         }
     }
@@ -74,52 +83,57 @@ fun SearchScreen(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        SearchBar(
+
+        AutoCompleteSearchField(suggestions = suggestions, onSearch = onSearch, onValueChange = onValueChange)
+
+        /*SearchBar(
             input = value,
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(16.dp)
+                .indication(interactionSource, LocalIndication.current),
             onValueChange = { keyword ->
                 onValueChange(keyword)
+                value = keyword
                 showSuggestions = suggestions.isNotEmpty() && keyword.isNotEmpty()
             },
             onSearch = onSearch
-        )
+        )*/
 
-        if (isSearching) {
+        /*if (isSearching) {
             LinearProgressIndicator(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             )
         } else {
-
-            Box (modifier = Modifier.padding(horizontal = 16.dp)){
+            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                 DropdownMenu(
-                    expanded = suggestions.isNotEmpty(),
-                    onDismissRequest = { /*TODO*/ },
+                    properties = PopupProperties(dismissOnClickOutside = true),
+                    expanded = showSuggestionDropdown,
+                    onDismissRequest = { showSuggestionDropdown = false },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 ) {
                     suggestions.forEach {
-                        DropdownMenuItem(text = { Text(text = it.name) }, onClick = { /*TODO*/ })
+                        DropdownMenuItem(
+                            text = { Text(text = it.name) },
+                            onClick = {
+                                onSuggestionItemClick(it.name)
+                                showSuggestionDropdown = false
+                                value = it.name
+                            }
+                        )
                     }
                 }
             }
-            
-            SuggestionList(
-                suggestions = suggestions,
-                onSuggestionItemClick = {
-                    value = it
-                    onSearch(it)
-                    showSuggestions = false
-                }
-            )
-        }
+        }*/
 
         when (uiState.searchResults) {
             is Resource.Loading -> LoadingScreen()
             is Resource.Success -> SearchResultList(
-                searchResults, onProductItemClick = onProductItemClick
+                searchResults,
+                onProductItemClick = onProductItemClick
             )
 
             is Resource.Error -> {}
