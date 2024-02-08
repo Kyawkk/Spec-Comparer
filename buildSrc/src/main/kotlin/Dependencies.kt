@@ -41,7 +41,7 @@ fun DependencyHandler.jsoup() {
     implementation(Dependencies.jsoup)
 }
 
-fun DependencyHandler.parser() {
+fun DependencyHandler.htmlUnitParser() {
     implementation(Dependencies.htmlUnitParser)
 }
 

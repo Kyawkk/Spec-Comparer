@@ -7,5 +7,5 @@ object Versions {
     const val jsoup = "1.16.2"
     const val htmlUnitCssParser = "3.7.0"
     const val materialExtendedIcons = "1.5.4"
-    const val dagger = "2.4.6"
+    const val dagger = "2.49"
 }

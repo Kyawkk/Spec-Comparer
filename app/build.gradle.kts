@@ -61,7 +61,7 @@ dependencies {
     hilt()
     coil()
     jsoup()
-    parser()
+    htmlUnitParser()
     materialExtendedIcons()
 
     implementation(libs.core.ktx)

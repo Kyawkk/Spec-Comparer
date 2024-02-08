@@ -25,4 +25,3 @@ rootProject.name = "Spec Comparer"
 include(":app")
 include(":core")
 include(":feature")
-include(":core:network")
