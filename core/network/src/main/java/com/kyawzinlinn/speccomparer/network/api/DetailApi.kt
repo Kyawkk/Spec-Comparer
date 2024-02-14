@@ -9,12 +9,12 @@ import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecification
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationItem
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationTable
-import com.kyawzinlinn.speccomparer.utils.CssParser
-import com.kyawzinlinn.speccomparer.utils.JsoupConfig
-import com.kyawzinlinn.speccomparer.utils.ProductType
-import com.kyawzinlinn.speccomparer.utils.Resource
-import com.kyawzinlinn.speccomparer.utils.getAllChildren
-import com.kyawzinlinn.speccomparer.utils.toParameter
+import com.kyawzinlinn.speccomparer.domain.utils.CssParser
+import com.kyawzinlinn.speccomparer.domain.utils.JsoupConfig
+import com.kyawzinlinn.speccomparer.domain.utils.ProductType
+import com.kyawzinlinn.speccomparer.domain.utils.Resource
+import com.kyawzinlinn.speccomparer.domain.utils.getAllChildren
+import com.kyawzinlinn.speccomparer.domain.utils.toParameter
 import org.jsoup.nodes.Element
 
 object DetailApi {

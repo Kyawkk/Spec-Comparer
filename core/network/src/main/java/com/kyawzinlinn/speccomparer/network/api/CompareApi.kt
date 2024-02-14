@@ -7,10 +7,10 @@ import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScore
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScoreBar
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScoreRow
 import com.kyawzinlinn.speccomparer.domain.model.compare.KeyDifference
-import com.kyawzinlinn.speccomparer.utils.JsoupConfig
-import com.kyawzinlinn.speccomparer.utils.ProductType
-import com.kyawzinlinn.speccomparer.utils.Resource
-import com.kyawzinlinn.speccomparer.utils.toParameter
+import com.kyawzinlinn.speccomparer.domain.utils.JsoupConfig
+import com.kyawzinlinn.speccomparer.domain.utils.ProductType
+import com.kyawzinlinn.speccomparer.domain.utils.Resource
+import com.kyawzinlinn.speccomparer.domain.utils.toParameter
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 
