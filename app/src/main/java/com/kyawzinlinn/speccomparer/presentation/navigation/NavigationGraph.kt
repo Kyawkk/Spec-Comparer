@@ -8,13 +8,20 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.kyawzinlinn.speccomparer.presentation.ProductViewModel
-import com.kyawzinlinn.speccomparer.presentation.compare.CompareScreen
-import com.kyawzinlinn.speccomparer.presentation.detail.ProductDetailScreen
-import com.kyawzinlinn.speccomparer.presentation.home.HomeScreen
-import com.kyawzinlinn.speccomparer.presentation.search.SearchScreen
-import com.kyawzinlinn.speccomparer.utils.ProductType
-import com.kyawzinlinn.speccomparer.utils.getProductType
+import com.kyawzinlinn.speccomparer.ProductViewModel
+import com.kyawzinlinn.speccomparer.R
+import com.kyawzinlinn.speccomparer.domain.model.DisplayCard
+import com.kyawzinlinn.speccomparer.domain.utils.ProductType
+import com.kyawzinlinn.speccomparer.domain.utils.getProductType
+import com.kyawzinlinn.speccomparer.home.HomeScreen
+import com.kyawzinlinn.speccomparer.search.SearchScreen
+
+val displayCards = listOf(
+    DisplayCard(R.drawable.smartphone,"Smartphones","Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.", ProductType.Smartphone),
+    DisplayCard(R.drawable.smartphone_chip,"Smartphone Processors","Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.", ProductType.Soc),
+    DisplayCard(R.drawable.processor,"Laptop CPUs","Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.", ProductType.Cpu),
+    DisplayCard(R.drawable.laptop,"Laptops","Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.", ProductType.Laptop),
+)
 
 @Composable
 fun NavigationGraph(
@@ -34,6 +41,7 @@ fun NavigationGraph(
                 updateNavigateBackButtonVisibility(false)
             }
             HomeScreen(
+                displayCards = displayCards,
                 onNavigateSearch = { type, title ->
                     val data = type.name
                     navController.navigate("${ScreenRoute.Search.name}/$data/$title")
@@ -95,7 +103,7 @@ fun NavigationGraph(
                 viewModel.showBottomSheet(false)
             }
 
-            ProductDetailScreen(
+            com.kyawzinlinn.speccomparer.details.ProductDetailScreen(
                 uiState = uiState,
                 isSearching = isSearching,
                 suggestions = uiState.suggestions,
@@ -120,7 +128,7 @@ fun NavigationGraph(
                 updateTrailingIconVisibility(false)
             }
 
-            CompareScreen(compareResponse = uiState.compareDetails)
+            com.kyawzinlinn.speccomparer.compare.CompareScreen(compareResponse = uiState.compareDetails)
         }
     }
 }

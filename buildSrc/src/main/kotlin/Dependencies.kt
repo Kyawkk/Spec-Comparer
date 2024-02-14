@@ -1,4 +1,5 @@
 import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.kotlin.dsl.DependencyHandlerScope
 
 object Dependencies {
     const val retrofit = "com.squareup.retrofit2:retrofit:${Versions.retrofit}"
@@ -47,4 +48,11 @@ fun DependencyHandler.htmlUnitParser() {
 
 fun DependencyHandler.materialExtendedIcons() {
     implementation(Dependencies.materialExtendedIcons)
+}
+
+fun DependencyHandler.allFeatureModules() {
+    moduleImplementation(":feature:compare")
+    moduleImplementation(":feature:details")
+    moduleImplementation(":feature:home")
+    moduleImplementation(":feature:search")
 }

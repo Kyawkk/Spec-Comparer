@@ -1,10 +1,13 @@
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
+
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
-    namespace = "com.example.network"
+    namespace = "com.kyawzinlinn.speccomparer.network"
     compileSdk = 34
 
     defaultConfig {
@@ -33,6 +36,11 @@ android {
 }
 
 dependencies {
+    hilt()
+    retrofit()
+    jsoup()
+    moduleImplementation(":core:domain")
+    moduleImplementation(":core:data")
 
     implementation(libs.core.ktx)
     implementation(libs.appcompat)
@@ -40,4 +48,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
+}
+kapt {
+    correctErrorTypes = true
 }

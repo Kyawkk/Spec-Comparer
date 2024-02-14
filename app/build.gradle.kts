@@ -53,8 +53,6 @@ android {
 }
 
 dependencies {
-    val retrofit_version = "2.9.0"
-    val nav_version = "2.7.4"
 
     retrofit()
     compose()
@@ -63,6 +61,13 @@ dependencies {
     jsoup()
     htmlUnitParser()
     materialExtendedIcons()
+
+    allFeatureModules()
+    moduleImplementation(":core:network")
+    moduleImplementation(":core:data")
+    moduleImplementation(":core:domain")
+    moduleImplementation(":core:design-system")
+    moduleImplementation(":feature")
 
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)

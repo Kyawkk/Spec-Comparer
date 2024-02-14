@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.core"
+    namespace = "com.kyawzinlinn.speccomparer.core"
     compileSdk = 34
 
     defaultConfig {
@@ -33,6 +33,7 @@ android {
 }
 
 dependencies {
+    htmlUnitParser()
 
     implementation(libs.core.ktx)
     implementation(libs.appcompat)
