@@ -36,6 +36,7 @@ class SearchViewModel @Inject constructor(
     init {
         _suggestions.value = emptyList()
         _searchResultsResponse.value = Resource.Default
+
     }
 
     private fun updateSelectedQuery(selectedQuery: String) {

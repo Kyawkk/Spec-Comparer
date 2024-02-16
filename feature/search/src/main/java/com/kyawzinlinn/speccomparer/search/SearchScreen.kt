@@ -1,12 +1,10 @@
 @file:OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class
+    ExperimentalFoundationApi::class
 )
 
 package com.kyawzinlinn.speccomparer.search
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -23,7 +21,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -70,6 +67,7 @@ fun SearchScreen(
             is Resource.Success -> {
                 showLoading = false
                 searchResults = (searchResponse as Resource.Success<List<Product>>).data
+                Log.d(TAG, "SearchScreen: ${searchResults.map { it.imageUrl }}")
             }
 
             else -> {

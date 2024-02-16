@@ -7,6 +7,10 @@ enum class ProductType (val title: String) {
     Laptop("laptop")
 }
 
+fun String.toProductType(): ProductType {
+    return ProductType.values().find { it.title.equals(this,ignoreCase = true) } ?: ProductType.Smartphone
+}
+
 fun getProductType(value: String) : ProductType {
     return when(value) {
         ProductType.Smartphone.title -> ProductType.Smartphone
