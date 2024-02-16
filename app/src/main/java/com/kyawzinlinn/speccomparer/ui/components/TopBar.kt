@@ -11,7 +11,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,10 +45,8 @@ fun TopBar(
 
     CenterAlignedTopAppBar(title = {
         AnimatedContent(
-            targetState = title,
-            transitionSpec = {
-                fadeIn() + slideInVertically(
-                    animationSpec = tween(400),
+            targetState = title, modifier = Modifier.fillMaxWidth(), transitionSpec = {
+                fadeIn() + slideInVertically(animationSpec = tween(400),
                     initialOffsetY = { it }) togetherWith fadeOut(
                     animationSpec = tween(
                         200
@@ -56,31 +54,27 @@ fun TopBar(
                 ) + slideOutVertically {
                     -it
                 }
-            }) { newTitle ->
+            }, label = ""
+        ) { newTitle ->
             Text(
                 text = newTitle,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
         }
-    },
-        navigationIcon = {
+    }, navigationIcon = {
+        IconButton(onClick = navigateUp) {
             if (canNavigateBack) {
-                IconButton(onClick = navigateUp) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack, contentDescription = null
-                    )
-                }
-            }
-        },
-        actions = {
-            if(showTrailingIcon) {
-                IconButton(onClick = onTrailingIconClick) {
-                    Icon(
-                        imageVector = Icons.Default.Compare, contentDescription = null
-                    )
-                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null
+                )
             }
         }
-    )
+    }, actions = {
+        IconButton(onClick = onTrailingIconClick) {
+            if (showTrailingIcon) Icon(
+                imageVector = Icons.Default.Compare, contentDescription = null
+            )
+        }
+    })
 }

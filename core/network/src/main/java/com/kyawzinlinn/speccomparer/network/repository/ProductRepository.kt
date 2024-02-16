@@ -6,7 +6,7 @@ import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecification
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.Resource
 
-interface SearchRepository {
+interface ProductRepository {
     suspend fun search(query: String, limit: Int, productType: ProductType) : Resource<List<Product>>
 
     suspend fun getProductSpecifications(device: String, type: ProductType) : Resource<ProductSpecificationResponse>

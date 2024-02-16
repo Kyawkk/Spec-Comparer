@@ -1,9 +1,13 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+@file:OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class,
     ExperimentalMaterial3Api::class
 )
 
 package com.kyawzinlinn.speccomparer.search
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -37,37 +41,49 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kyawzinlinn.speccomparer.design_system.UiState
 import com.kyawzinlinn.speccomparer.design_system.components.AutoCompleteSearchField
 import com.kyawzinlinn.speccomparer.design_system.components.LoadingScreen
 import com.kyawzinlinn.speccomparer.domain.model.Product
+import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.Resource
 
 @Composable
 fun SearchScreen(
-    uiState: UiState,
-    onValueChange: (String) -> Unit,
-    onSearch: (String) -> Unit,
+    productType: ProductType,
     onProductItemClick: (Product) -> Unit,
-    onSuggestionItemClick: (String) -> Unit,
+    searchViewModel: SearchViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
-    suggestions: List<Product>,
-    isSearching: Boolean
 ) {
-    var showSuggestions by rememberSaveable { mutableStateOf(false) }
-    var value by rememberSaveable { mutableStateOf("") }
+    val TAG = "SearchScreen"
     var searchResults by rememberSaveable { mutableStateOf(listOf<Product>()) }
-    var showSuggestionDropdown by remember { mutableStateOf(false) }
-    val interactionSource = remember { MutableInteractionSource() }
+    val searchResponse by searchViewModel.searchResultsResponse.collectAsStateWithLifecycle()
+    val suggestions by searchViewModel.suggestions.collectAsStateWithLifecycle()
+    var showLoading by remember { mutableStateOf(false) }
+    val selectedQuery by searchViewModel.selectedQuery.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState.searchResults) {
-        when (uiState.searchResults) {
-            is Resource.Success -> {
-                searchResults = (uiState.searchResults as Resource.Success<List<Product>>).data
+    LaunchedEffect (selectedQuery) {
+        Log.d(TAG, "SearchScreen: $selectedQuery")
+    }
+
+    LaunchedEffect(searchResponse) {
+        when (searchResponse) {
+            is Resource.Loading -> {
+                showLoading = true
             }
-            else -> {}
+
+            is Resource.Success -> {
+                showLoading = false
+                searchResults = (searchResponse as Resource.Success<List<Product>>).data
+            }
+
+            else -> {
+                showLoading = false
+            }
         }
     }
 
@@ -75,74 +91,19 @@ fun SearchScreen(
         modifier = modifier.fillMaxSize()
     ) {
 
-        AutoCompleteSearchField(suggestions = suggestions, onSearch = onSearch, onValueChange = onValueChange)
+        AutoCompleteSearchField(
+            suggestions = suggestions,
+            defaultValue = selectedQuery,
+            onSearch = { searchViewModel.search(it, productType) },
+            onValueChange = { searchViewModel.getSuggestions(it, productType) })
 
-        /*SearchBar(
-            input = value,
-            modifier = Modifier
-                .padding(16.dp)
-                .indication(interactionSource, LocalIndication.current),
-            onValueChange = { keyword ->
-                onValueChange(keyword)
-                value = keyword
-                showSuggestions = suggestions.isNotEmpty() && keyword.isNotEmpty()
-            },
-            onSearch = onSearch
-        )*/
+        if (showLoading) LoadingScreen()
 
-        /*if (isSearching) {
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
-        } else {
-            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                DropdownMenu(
-                    properties = PopupProperties(dismissOnClickOutside = true),
-                    expanded = showSuggestionDropdown,
-                    onDismissRequest = { showSuggestionDropdown = false },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    suggestions.forEach {
-                        DropdownMenuItem(
-                            text = { Text(text = it.name) },
-                            onClick = {
-                                onSuggestionItemClick(it.name)
-                                showSuggestionDropdown = false
-                                value = it.name
-                            }
-                        )
-                    }
-                }
-            }
-        }*/
-
-        when (uiState.searchResults) {
-            is Resource.Loading -> LoadingScreen()
-            is Resource.Success -> SearchResultList(
-                searchResults,
+        else {
+            SearchResultList(
+                searchResults = searchResults,
                 onProductItemClick = onProductItemClick
             )
-
-            is Resource.Error -> {}
-            is Resource.Default -> {}
-        }
-
-        AnimatedVisibility(
-            visible = showSuggestions, enter = fadeIn(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium
-                )
-            ), exit = fadeOut(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMedium
-                )
-            )
-        ) {
-
         }
     }
 }

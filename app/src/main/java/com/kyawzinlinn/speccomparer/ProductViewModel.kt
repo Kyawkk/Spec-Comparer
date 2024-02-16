@@ -2,7 +2,7 @@ package com.kyawzinlinn.speccomparer
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kyawzinlinn.speccomparer.network.repository.SearchRepository
+import com.kyawzinlinn.speccomparer.network.repository.ProductRepository
 import com.kyawzinlinn.speccomparer.design_system.UiState
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProductViewModel @Inject constructor(
-    private val searchRepository: SearchRepository
+    private val productRepository: ProductRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
@@ -95,7 +95,7 @@ class ProductViewModel @Inject constructor(
         viewModelScope.launch {
             _searchText.value = ""
             _uiState.update {
-                it.copy(searchResults = searchRepository.search(query, limit, productType))
+                it.copy(searchResults = productRepository.search(query, limit, productType))
             }
         }
     }
@@ -105,7 +105,7 @@ class ProductViewModel @Inject constructor(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             _isSearching.update { true }
-            val searchResponse = searchRepository.search(query, limit, productType)
+            val searchResponse = productRepository.search(query, limit, productType)
             when (searchResponse) {
                 is Resource.Success -> {
                     _uiState.update { it.copy(suggestions = searchResponse.data) }
@@ -120,7 +120,7 @@ class ProductViewModel @Inject constructor(
 
     fun getFirstProductSpecifications(device: String, type: ProductType) {
         viewModelScope.launch(Dispatchers.IO) {
-            val productDetails = searchRepository.getProductSpecifications(device, type)
+            val productDetails = productRepository.getProductSpecifications(device, type)
             _uiState.update {
                 it.copy(
                     isCompareState = false,
@@ -132,7 +132,7 @@ class ProductViewModel @Inject constructor(
 
     fun getSecondProductSpecifications(device: String, type: ProductType) {
         viewModelScope.launch(Dispatchers.IO) {
-            val productDetails = searchRepository.getProductSpecifications(device, type)
+            val productDetails = productRepository.getProductSpecifications(device, type)
             _uiState.update {
                 it.copy(
                     isCompareState = true,
@@ -144,7 +144,7 @@ class ProductViewModel @Inject constructor(
 
     fun compareProducts(firstDevice: String, secondDevice: String, type: ProductType) {
         viewModelScope.launch(Dispatchers.IO) {
-            val compareDetails = searchRepository.compareProducts(firstDevice, secondDevice, type)
+            val compareDetails = productRepository.compareProducts(firstDevice, secondDevice, type)
             _uiState.update {
                 it.copy(compareDetails = compareDetails)
             }

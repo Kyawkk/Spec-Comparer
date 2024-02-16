@@ -10,16 +10,16 @@ import com.kyawzinlinn.speccomparer.network.api.ApiService
 import com.kyawzinlinn.speccomparer.network.api.CompareApi
 import com.kyawzinlinn.speccomparer.network.api.DetailApi
 
-class SearchRepositoryImpl(private val apiService: ApiService) : SearchRepository {
+class ProductRepositoryImpl(private val apiService: ApiService) : ProductRepository {
     override suspend fun search(
         query: String,
         limit: Int,
         productType: ProductType
     ): Resource<List<Product>> {
-        try {
-            return Resource.Success(apiService.search(query, limit, productType.title).addImageLinks())
+        return try {
+            Resource.Success(apiService.search(query, limit, productType.title).addImageLinks())
         }catch (e: Exception) {
-            return Resource.Error(e.message.toString())
+            Resource.Error(e.message.toString())
         }
     }
 

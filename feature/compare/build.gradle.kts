@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
+
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -40,6 +43,8 @@ android {
 
 dependencies {
     moduleImplementation(":core:domain")
+    moduleImplementation(":core:network")
+    hilt()
 
     compose()
     implementation(libs.core.ktx)

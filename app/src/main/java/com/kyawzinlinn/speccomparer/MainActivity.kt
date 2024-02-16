@@ -12,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.kyawzinlinn.speccomparer.navigation.NavigationGraph
 import com.kyawzinlinn.speccomparer.ui.components.TopBar
@@ -25,8 +26,10 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             val viewModel: ProductViewModel = hiltViewModel()
+            val sharedUiViewmodel: SharedUiViewmodel = hiltViewModel()
             val navController = rememberNavController()
-            val uiState by viewModel.uiState.collectAsState()
+
+            val uiState by sharedUiViewmodel.uiState.collectAsStateWithLifecycle()
 
             SpecComparerTheme {
                 Scaffold(
@@ -35,13 +38,14 @@ class MainActivity : ComponentActivity() {
                             title = uiState.title,
                             canNavigateBack = uiState.canNavigateBack,
                             showTrailingIcon = uiState.showTrailingIcon,
-                            onTrailingIconClick = { viewModel.showBottomSheet(true) },
-                            navigateUp = { navController.navigateUp() },
+                            onTrailingIconClick = sharedUiViewmodel::showCompareBottomSheet,
+                            navigateUp = navController::navigateUp,
                         )
                     }
                 ) {
                     NavigationGraph(
                         viewModel = viewModel,
+                        sharedUiViewmodel = sharedUiViewmodel,
                         navController = navController,
                         modifier = Modifier.padding(it)
                     )

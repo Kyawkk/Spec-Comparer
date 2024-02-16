@@ -1,5 +1,6 @@
 package com.kyawzinlinn.speccomparer.design_system.components
 
+import android.util.Log
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -27,30 +28,25 @@ import com.kyawzinlinn.speccomparer.domain.model.Product
 
 @Composable
 fun AutoCompleteSearchField(
+    defaultValue: String = "",
     modifier: Modifier = Modifier,
     suggestions: List<Product>,
     onValueChange: (String) -> Unit,
     onSearch: (String) -> Unit
 ) {
-    var selectedValue by remember {
-        mutableStateOf("")
-    }
-
-    LaunchedEffect(suggestions) {
-        println("search suggestions: $suggestions")
-    }
-
+    val TAG = "AutoCompleteSearchField"
+    var selectedValue by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var searchFieldSize by remember { mutableStateOf(Size.Zero) }
-    var inputValue by remember { mutableStateOf("") }
+    var inputValue by remember { mutableStateOf(defaultValue) }
     val interactionSource = remember { MutableInteractionSource() }
+
+    LaunchedEffect (defaultValue) {
+        inputValue = defaultValue
+    }
 
     LaunchedEffect(inputValue) {
         expanded = suggestions.isNotEmpty()
-    }
-
-    LaunchedEffect(expanded) {
-        println("expanded: $expanded")
     }
 
     Column(
@@ -79,8 +75,9 @@ fun AutoCompleteSearchField(
                 DropdownMenuItem(
                     text = { Text(text = it.name) },
                     onClick = {
-                        selectedValue = it.name
+                        inputValue = it.name
                         onSearch(it.name)
+                        selectedValue = it.name
                         expanded = false
                     }
                 )

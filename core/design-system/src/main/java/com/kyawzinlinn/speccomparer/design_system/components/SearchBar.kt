@@ -43,6 +43,7 @@ fun SearchBar(
 
     TextField(
         value = value,
+        maxLines = 1,
         modifier = modifier
             .fillMaxWidth()
             .border(border = BorderStroke(1.dp,Color.LightGray), shape = RoundedCornerShape(12.dp))

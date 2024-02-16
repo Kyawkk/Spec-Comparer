@@ -5,11 +5,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.kyawzinlinn.speccomparer.ProductViewModel
 import com.kyawzinlinn.speccomparer.R
+import com.kyawzinlinn.speccomparer.SharedUiViewmodel
+import com.kyawzinlinn.speccomparer.compare.CompareScreen
+import com.kyawzinlinn.speccomparer.details.ProductDetailScreen
 import com.kyawzinlinn.speccomparer.domain.model.DisplayCard
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.getProductType
@@ -25,20 +29,22 @@ val displayCards = listOf(
 
 @Composable
 fun NavigationGraph(
-    viewModel: ProductViewModel, navController: NavHostController, modifier: Modifier = Modifier
+    sharedUiViewmodel: SharedUiViewmodel,
+    viewModel: ProductViewModel,
+    navController: NavHostController,
+    modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val suggestions by viewModel.suggestions.collectAsState()
 
     NavHost(
         navController = navController, modifier = modifier, startDestination = ScreenRoute.Home.name
     ) {
 
         composable(ScreenRoute.Home.name) {
-            viewModel.apply {
+            sharedUiViewmodel.apply {
                 updateTitle("Home")
-                updateTrailingIconVisibility(false)
-                updateNavigateBackButtonVisibility(false)
+                hideTrailingIcon()
+                disableNavigateBack()
             }
             HomeScreen(
                 displayCards = displayCards,
@@ -50,42 +56,20 @@ fun NavigationGraph(
 
         composable("${ScreenRoute.Search.name}/{data}/{title}") {
             val title = it.arguments?.getString("title")
-            val isSearching by viewModel.isSearching.collectAsState()
-
-            LaunchedEffect(Unit) {
-                viewModel.apply {
-                    resetSearchResults()
-                    resetProductSpecifications()
-                }
-            }
-
-            viewModel.apply {
-                updateTitle(title ?: "Search")
-                updateTrailingIconVisibility(false)
-                updateNavigateBackButtonVisibility(true)
-            }
             val type = ProductType.valueOf(it.arguments?.getString("data")!!)
 
+            sharedUiViewmodel.apply {
+                updateTitle(title ?: "Search")
+                hideTrailingIcon()
+                enableNavigateBack()
+            }
+
             SearchScreen(
-                suggestions = uiState.suggestions,
-                isSearching = isSearching,
-                uiState = uiState,
-                onValueChange = { if (it.isNotEmpty()) viewModel.getSuggestions(it, 8, type) },
-                onSearch = { viewModel.search(it, 500, type) },
-                onSuggestionItemClick = {
-                    viewModel.search(it, 500, type)
-                },
+                productType = type,
                 onProductItemClick = {
                     navController.navigate(
-                        "${ScreenRoute.Details.name}/${it.name}/${
-                            getProductType(
-                                it.content_type
-                            )
-                        }"
+                        "${ScreenRoute.Details.name}/${it.name}/${getProductType(it.content_type)}"
                     )
-                    viewModel.apply {
-                        getFirstProductSpecifications(it.name, getProductType(it.content_type))
-                    }
                 })
         }
 
@@ -94,26 +78,26 @@ fun NavigationGraph(
             val productType = ProductType.valueOf(it.arguments?.getString("productType") ?: "")
             val isSearching by viewModel.isSearching.collectAsState()
 
-            viewModel.apply {
+            sharedUiViewmodel.apply {
                 updateTitle(product)
-                updateNavigateBackButtonVisibility(true)
-                updateTrailingIconVisibility(true)
+                enableNavigateBack()
+                showTrailingIcon()
             }
             LaunchedEffect(Unit) {
-                viewModel.showBottomSheet(false)
+                sharedUiViewmodel.hideCompareBottomSheet()
             }
 
-            com.kyawzinlinn.speccomparer.details.ProductDetailScreen(
+            ProductDetailScreen(
                 uiState = uiState,
                 isSearching = isSearching,
                 suggestions = uiState.suggestions,
                 onValueChange = {
                     viewModel.getSuggestions(it, 8, productType)
                 },
-                onDismissBottomSheet = { viewModel.showBottomSheet(false) },
+                onDismissBottomSheet = sharedUiViewmodel::hideCompareBottomSheet,
                 onCompare = { firstDevice, secondDevice ->
                     viewModel.compareProducts(firstDevice, secondDevice, productType)
-                    viewModel.showBottomSheet(false)
+                    sharedUiViewmodel.hideCompareBottomSheet()
                     navController.navigate("${ScreenRoute.Compare.name}/$firstDevice/$secondDevice")
                 }
             )
@@ -123,12 +107,12 @@ fun NavigationGraph(
             val first = it.arguments?.getString("firstDevice")
             val second = it.arguments?.getString("secondDevice")
 
-            viewModel.apply {
+            sharedUiViewmodel.apply {
                 updateTitle("$first Vs $second")
-                updateTrailingIconVisibility(false)
+                hideTrailingIcon()
             }
 
-            com.kyawzinlinn.speccomparer.compare.CompareScreen(compareResponse = uiState.compareDetails)
+            CompareScreen(compareResponse = uiState.compareDetails)
         }
     }
 }
