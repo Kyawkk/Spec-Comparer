@@ -6,7 +6,6 @@ object ImageUrlBuilder {
     }
 
     fun buildSingleImage(productType: ProductType, path: String) : String{
-        println("productType: $productType")
         return when (productType) {
             ProductType.Soc -> checkPath(path, productType)
             ProductType.Cpu -> checkPath(path, productType)
@@ -15,7 +14,6 @@ object ImageUrlBuilder {
     }
 
     private fun checkPath(path: String, productType: ProductType): String {
-        println(path)
         return when (true) {
             path.lowercase().contains("qualcomm") -> "${IMAGE_URL}soc/qualcomm-mini.jpeg"
             path.lowercase().contains("mediatek") -> "${IMAGE_URL}soc/mediatek-mini.jpeg"
