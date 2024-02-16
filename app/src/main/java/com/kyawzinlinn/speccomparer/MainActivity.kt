@@ -13,7 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
-import com.kyawzinlinn.speccomparer.presentation.navigation.NavigationGraph
+import com.kyawzinlinn.speccomparer.navigation.NavigationGraph
 import com.kyawzinlinn.speccomparer.ui.components.TopBar
 import com.kyawzinlinn.speccomparer.ui.theme.SpecComparerTheme
 import dagger.hilt.android.AndroidEntryPoint

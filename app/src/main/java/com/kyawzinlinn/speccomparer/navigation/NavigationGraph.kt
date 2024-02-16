@@ -1,4 +1,4 @@
-package com.kyawzinlinn.speccomparer.presentation.navigation
+package com.kyawzinlinn.speccomparer.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
