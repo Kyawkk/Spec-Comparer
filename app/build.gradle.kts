@@ -67,7 +67,6 @@ dependencies {
     moduleImplementation(":core:data")
     moduleImplementation(":core:domain")
     moduleImplementation(":core:design-system")
-    moduleImplementation(":feature")
 
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)

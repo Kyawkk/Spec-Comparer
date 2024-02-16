@@ -37,7 +37,7 @@ dependencies {
     jsoup()
 
     moduleImplementation(":core:domain")
-    moduleImplementation(":core:network")
+    //moduleImplementation(":core:network")
 
     implementation(libs.core.ktx)
     implementation(libs.appcompat)

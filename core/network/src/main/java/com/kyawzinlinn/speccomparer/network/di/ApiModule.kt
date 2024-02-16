@@ -2,6 +2,8 @@ package com.kyawzinlinn.speccomparer.network.di
 
 import com.kyawzinlinn.speccomparer.domain.utils.BASE_URL
 import com.kyawzinlinn.speccomparer.network.api.ApiService
+import com.kyawzinlinn.speccomparer.network.repository.SearchRepository
+import com.kyawzinlinn.speccomparer.network.repository.SearchRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,7 +29,7 @@ object ApiModule {
 
     @Provides
     @Singleton
-    fun providesSearchRepository(apiService: ApiService) : com.kyawzinlinn.speccomparer.data.repository.SearchRepository {
-        return com.kyawzinlinn.speccomparer.data.repository.SearchRepositoryImpl(apiService)
+    fun providesSearchRepository(apiService: ApiService) : SearchRepository {
+        return SearchRepositoryImpl(apiService)
     }
 }

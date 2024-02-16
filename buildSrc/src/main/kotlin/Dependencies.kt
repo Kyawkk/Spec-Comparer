@@ -53,6 +53,6 @@ fun DependencyHandler.materialExtendedIcons() {
 fun DependencyHandler.allFeatureModules() {
     moduleImplementation(":feature:compare")
     moduleImplementation(":feature:details")
-    moduleImplementation(":feature:home")
     moduleImplementation(":feature:search")
+    moduleImplementation(":feature:home")
 }

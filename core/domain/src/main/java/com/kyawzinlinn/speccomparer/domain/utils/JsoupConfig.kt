@@ -3,6 +3,7 @@ package com.kyawzinlinn.speccomparer.domain.utils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
+import java.util.Locale
 
 object JsoupConfig {
     fun connectCompareWebUrl(path: String, productType: ProductType) : Document{
@@ -35,7 +36,7 @@ fun Elements.getAllChildren(): List<String>{
 }
 
 fun String.toParameter(): String{
-    return if (this.contains(" ")) this.toLowerCase()
+    return if (this.contains(" ")) this.lowercase(Locale.getDefault())
         .replace(Regex("[^a-z0-9\\s]"), "")
         .replace(" ", "-") else this
 }

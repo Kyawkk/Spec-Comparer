@@ -2,7 +2,7 @@ package com.kyawzinlinn.speccomparer
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kyawzinlinn.speccomparer.data.repository.SearchRepository
+import com.kyawzinlinn.speccomparer.network.repository.SearchRepository
 import com.kyawzinlinn.speccomparer.design_system.UiState
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType

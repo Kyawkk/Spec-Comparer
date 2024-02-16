@@ -1,4 +1,4 @@
-package com.kyawzinlinn.speccomparer.data.repository
+package com.kyawzinlinn.speccomparer.network.repository
 
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse

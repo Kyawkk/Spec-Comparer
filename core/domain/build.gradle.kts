@@ -35,7 +35,7 @@ android {
 dependencies {
     jsoup()
     htmlUnitParser()
-    moduleImplementation(":core:data")
+    //moduleImplementation(":core:data")
 
     implementation(libs.core.ktx)
     implementation(libs.appcompat)
