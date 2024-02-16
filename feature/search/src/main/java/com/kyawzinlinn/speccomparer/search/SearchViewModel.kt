@@ -34,14 +34,8 @@ class SearchViewModel @Inject constructor(
     val selectedQuery = _selectedQuery.asStateFlow()
 
     init {
-        /*_suggestions.value = emptyList()
-        _searchResultsResponse.value = Resource.Default*/
-
-        viewModelScope.launch {
-            searchResultsResponse.collect {
-                Log.d(TAG, "response: $it")
-            }
-        }
+        _suggestions.value = emptyList()
+        _searchResultsResponse.value = Resource.Default
     }
 
     private fun updateSelectedQuery(selectedQuery: String) {

@@ -2,19 +2,15 @@
     ExperimentalMaterial3Api::class,
     ExperimentalMaterial3Api::class,
     ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class
 )
 
 package com.kyawzinlinn.speccomparer.search
 
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,7 +41,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.kyawzinlinn.speccomparer.design_system.UiState
 import com.kyawzinlinn.speccomparer.design_system.components.AutoCompleteSearchField
 import com.kyawzinlinn.speccomparer.design_system.components.LoadingScreen
 import com.kyawzinlinn.speccomparer.domain.model.Product
@@ -65,10 +60,6 @@ fun SearchScreen(
     val suggestions by searchViewModel.suggestions.collectAsStateWithLifecycle()
     var showLoading by remember { mutableStateOf(false) }
     val selectedQuery by searchViewModel.selectedQuery.collectAsStateWithLifecycle()
-
-    LaunchedEffect (selectedQuery) {
-        Log.d(TAG, "SearchScreen: $selectedQuery")
-    }
 
     LaunchedEffect(searchResponse) {
         when (searchResponse) {
@@ -91,18 +82,20 @@ fun SearchScreen(
         modifier = modifier.fillMaxSize()
     ) {
 
-        AutoCompleteSearchField(
-            suggestions = suggestions,
+        AutoCompleteSearchField(suggestions = suggestions,
             defaultValue = selectedQuery,
             onSearch = { searchViewModel.search(it, productType) },
             onValueChange = { searchViewModel.getSuggestions(it, productType) })
 
         if (showLoading) LoadingScreen()
-
         else {
             SearchResultList(
                 searchResults = searchResults,
-                onProductItemClick = onProductItemClick
+                onRemoveErrorItem = {
+                    val temp = searchResults.toMutableList()
+                    temp.remove(it)
+                    searchResults = temp
+                }, onProductItemClick = onProductItemClick
             )
         }
     }
@@ -111,6 +104,7 @@ fun SearchScreen(
 @Composable
 fun SearchResultList(
     searchResults: List<Product>,
+    onRemoveErrorItem: (Product) -> Unit,
     onProductItemClick: (Product) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -122,7 +116,7 @@ fun SearchResultList(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(searchResults) { product ->
-            Card(onClick = { onProductItemClick(product) }) {
+            Card(onClick = { onProductItemClick(product) }, modifier = Modifier.animateItemPlacement()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -135,38 +129,17 @@ fun SearchResultList(
                         .padding(16.dp), verticalAlignment = Alignment.CenterVertically
                 ) {
                     AsyncImage(
+                        onError = { onRemoveErrorItem(product) },
                         model = ImageRequest.Builder(context).data(product.imageUrl).crossfade(true)
-                            .build(), modifier = Modifier, contentDescription = null
+                            .build(),
+                        modifier = Modifier,
+                        contentDescription = null
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = product.name, style = MaterialTheme.typography.titleMedium
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SuggestionList(
-    suggestions: List<Product>,
-    onSuggestionItemClick: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(suggestions) {
-            Card(modifier = Modifier, onClick = { onSuggestionItemClick(it.name) }) {
-                Text(
-                    text = it.name, modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
             }
         }
     }
