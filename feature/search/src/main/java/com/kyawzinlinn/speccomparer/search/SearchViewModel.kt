@@ -47,7 +47,6 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             _suggestions.value = emptyList()
             updateSelectedQuery(productName)
-            Log.d(TAG, "search: $productName $productType")
             _searchResultsResponse.value = Resource.Loading
             delay(500)
             _searchResultsResponse.value = productRepository.search(productName,500,productType)
