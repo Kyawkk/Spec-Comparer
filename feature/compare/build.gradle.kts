@@ -44,7 +44,10 @@ android {
 dependencies {
     moduleImplementation(":core:domain")
     moduleImplementation(":core:network")
+    moduleImplementation(":core:components")
+    moduleImplementation(":core:data")
     hilt()
+    coil()
 
     compose()
     implementation(libs.core.ktx)
@@ -56,6 +59,8 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     implementation(libs.material3)
 
+    debugImplementation(libs.ui.tooling)
+    debugImplementation(libs.ui.test.manifest)
     implementation(libs.core.ktx)
     implementation(libs.appcompat)
     implementation(libs.material)

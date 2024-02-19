@@ -134,7 +134,7 @@ object CompareApi {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
+        println("scoreList: $scoreBarList")
         return scoreBarList
     }
 
@@ -150,8 +150,8 @@ object CompareApi {
             ?.replace("width:", "")?.trim() ?: ""
 
         val secondScoreResult =
-            scoreElements?.get(1)?.select("div.score-bar>div.score-bar-result>span")?.text() ?: ""
-        val secondScoreValue = scoreElements?.get(1)
+            scoreElements?.get(2)?.select("div.score-bar>div.score-bar-result>span")?.text() ?: ""
+        val secondScoreValue = scoreElements?.get(2)
             ?.select("div.score-bar>div.score-bar-line>div.score-bar-line-filled")?.attr("style")
             ?.replace("width:", "")?.trim() ?: ""
 

@@ -1,7 +1,7 @@
 package com.kyawzinlinn.speccomparer.domain.model.compare
 
 data class CompareResponse(
-    val compareDeviceHeaderDetails: CompareScore?,
-    val keyDifferences: CompareKeyDifferences?,
-    val compareSpecDetails: List<CompareDetailResponse?>
+    val compareDeviceHeaderDetails: CompareScore? = null,
+    val keyDifferences: CompareKeyDifferences? = null,
+    val compareSpecDetails: List<CompareDetailResponse?> = emptyList()
 )

@@ -246,16 +246,15 @@ private fun ProductDetailContent(
         Card(
             modifier = Modifier
         ) {
-            Row(modifier = Modifier.padding(16.dp)) {
+            Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(ImageUrlBuilder.build(productSpecificationResponse.productSpecification.productImageUrl))
                         .crossfade(true).build(),
-                    modifier = Modifier,
+                    modifier = Modifier.weight(0.2f),
                     contentScale = ContentScale.FillBounds,
                     contentDescription = null
                 )
-                Spacer(Modifier.width(16.dp))
                 Column(
                     modifier = Modifier.weight(0.8f),
                     verticalArrangement = Arrangement.spacedBy(16.dp)

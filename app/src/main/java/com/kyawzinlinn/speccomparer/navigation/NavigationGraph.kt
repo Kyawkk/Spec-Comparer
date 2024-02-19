@@ -97,21 +97,26 @@ fun NavigationGraph(
                 onCompare = { firstDevice, secondDevice ->
                     viewModel.compareProducts(firstDevice, secondDevice, productType)
                     sharedUiViewmodel.hideCompareBottomSheet()
-                    navController.navigate("${ScreenRoute.Compare.name}/$firstDevice/$secondDevice")
+                    navController.navigate("${ScreenRoute.Compare.name}/$firstDevice/$secondDevice/$productType")
                 }
             )
         }
 
-        composable("${ScreenRoute.Compare.name}/{firstDevice}/{secondDevice}") {
-            val first = it.arguments?.getString("firstDevice")
-            val second = it.arguments?.getString("secondDevice")
+        composable("${ScreenRoute.Compare.name}/{firstDevice}/{secondDevice}/{productType}") {
+            val first = it.arguments?.getString("firstDevice") ?: ""
+            val second = it.arguments?.getString("secondDevice") ?: ""
+            val productType = ProductType.valueOf(it.arguments?.getString("productType") ?: "")
 
             sharedUiViewmodel.apply {
                 updateTitle("$first Vs $second")
                 hideTrailingIcon()
             }
 
-            CompareScreen(compareResponse = uiState.compareDetails)
+            CompareScreen(
+                firstDevice = first,
+                secondDevice = second,
+                productType = productType
+            )
         }
     }
 }
