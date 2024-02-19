@@ -43,6 +43,7 @@ import com.kyawzinlinn.speccomparer.domain.model.compare.CompareKeyDifferences
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScore
 import com.kyawzinlinn.speccomparer.domain.model.compare.KeyDifference
+import com.kyawzinlinn.speccomparer.domain.utils.ImageUrlBuilder
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.Resource
 
@@ -179,7 +180,7 @@ private fun HeaderSection(
                     AsyncImage(
                         model = ImageRequest
                             .Builder(context)
-                            .data(compareHeaderDetails.firstImgUrl)
+                            .data(ImageUrlBuilder.build(compareHeaderDetails.firstImgUrl))
                             .error(com.google.android.material.R.drawable.ic_clock_black_24dp)
                             .build(),
                         modifier = Modifier.size(100.dp),
@@ -197,7 +198,7 @@ private fun HeaderSection(
                     AsyncImage(
                         model = ImageRequest
                             .Builder(context)
-                            .data(compareHeaderDetails.firstImgUrl)
+                            .data(ImageUrlBuilder.build(compareHeaderDetails.secondImgUrl))
                             .error(com.google.android.material.R.drawable.ic_clock_black_24dp)
                             .build(),
                         modifier = Modifier.size(100.dp),
