@@ -3,6 +3,7 @@
 package com.kyawzinlinn.speccomparer
 
 import android.os.Bundle
+import android.os.StrictMode
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
@@ -18,11 +19,18 @@ import com.kyawzinlinn.speccomparer.navigation.NavigationGraph
 import com.kyawzinlinn.speccomparer.ui.components.TopBar
 import com.kyawzinlinn.speccomparer.ui.theme.SpecComparerTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        /*val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)*/
+
         setContent {
 
             val viewModel: ProductViewModel = hiltViewModel()

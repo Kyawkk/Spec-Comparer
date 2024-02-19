@@ -45,80 +45,67 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kyawzinlinn.speccomparer.design_system.UiState
 import com.kyawzinlinn.speccomparer.design_system.components.CompareBottomSheet
 import com.kyawzinlinn.speccomparer.design_system.components.LoadingScreen
-import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecification
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationItem
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationTable
 import com.kyawzinlinn.speccomparer.domain.utils.ImageUrlBuilder
+import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.Resource
 
 @Composable
 fun ProductDetailScreen(
+    product: String,
+    productType: ProductType,
     uiState: UiState,
-    isSearching: Boolean,
+    showBottomSheet: Boolean,
     onCompare: (String, String) -> Unit,
     onDismissBottomSheet: () -> Unit,
-    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier.padding(16.dp),
-    suggestions: List<Product>
+    detailViewModel: DetailViewModel = hiltViewModel()
 ) {
-    var firstProductDetails by remember { mutableStateOf(ProductSpecificationResponse(ProductSpecification(),
-        emptyList()
-    )) }
 
-    var compareUiState by remember {
-        mutableStateOf(UiState())
-    }
+    var firstProductDetails by remember { mutableStateOf("") }
+    val detailResponse by detailViewModel.detailResponse.collectAsStateWithLifecycle()
+    val suggestions by detailViewModel.suggestions.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState.compareDetails) {
-        compareUiState = uiState
-    }
+    var compareUiState by remember { mutableStateOf(UiState()) }
 
-    LaunchedEffect (uiState.productDetails) {
-        when (uiState.productDetails) {
-            is Resource.Success -> {firstProductDetails = (uiState.productDetails as Resource.Success<ProductSpecificationResponse>).data}
-            else -> {}
-        }
-    }
+    LaunchedEffect(uiState.compareDetails) { compareUiState = uiState }
+    LaunchedEffect (Unit) { detailViewModel.resetSuggestions() }
+    LaunchedEffect(Unit) { detailViewModel.getProductDetailSpecification(product, productType) }
 
     CompareBottomSheet(
         suggestions = suggestions,
-        isSearching = isSearching,
-        onValueChange = onValueChange,
-        firstDevice = firstProductDetails.productSpecification?.productName ?: "",
-        showBottomSheet = uiState.showBottomSheet,
+        onValueChange = { detailViewModel.getSuggestions(it, productType) },
+        firstDevice = firstProductDetails,
+        showBottomSheet = showBottomSheet,
         onCompare = onCompare,
         onDismissBottomSheet = onDismissBottomSheet
     )
 
     Row(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.weight(if (uiState.isCompareState) 0.5f else 1f)) {
-            when (uiState.productDetails) {
+            when (detailResponse) {
                 is Resource.Loading -> LoadingScreen()
-                is Resource.Success -> ProductDetailContent((uiState.productDetails as Resource.Success<ProductSpecificationResponse>).data)
+                is Resource.Success -> {
+                    val response =
+                        (detailResponse as Resource.Success<ProductSpecificationResponse>).data
+                    firstProductDetails = response.productSpecification.productName
+                    ProductDetailContent(response)
+                }
                 is Resource.Error -> {}
                 else -> {}
             }
         }
-
-        /*if (uiState.isCompareState) {
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(0.5f)) {
-                when (uiState.secondProductDetails) {
-                    is Resource.Loading -> LoadingScreen()
-                    is Resource.Success -> ProductDetailContent((uiState.secondProductDetails).data)
-                    is Resource.Error -> {}
-                    else -> {}
-                }
-            }
-        }*/
     }
 }
 
@@ -204,7 +191,7 @@ fun SpecTableItem(specificationTable: SpecificationTable, modifier: Modifier = M
         }
         Spacer(Modifier.height(8.dp))
         Spacer(
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
                 .background(Color.LightGray)
@@ -226,7 +213,7 @@ fun SpecColumnItem(
 
     val animatedProgress by animateFloatAsState(
         targetValue = if (isExpanded) specificationColumn.progress.toFloat() / 100f else 0f,
-        animationSpec = tween(1000)
+        animationSpec = tween(1000), label = ""
     )
     Column(modifier = modifier) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

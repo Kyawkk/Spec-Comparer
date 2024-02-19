@@ -1,5 +1,7 @@
 package com.kyawzinlinn.speccomparer.network.api
 
+import android.os.Build
+import android.os.StrictMode
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.CompareResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.HeaderData
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.KeyDifference
@@ -15,35 +17,35 @@ import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.Resource
 import com.kyawzinlinn.speccomparer.domain.utils.getAllChildren
 import com.kyawzinlinn.speccomparer.domain.utils.toParameter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jsoup.nodes.Element
+import java.util.Locale
 
 object DetailApi {
 
-    fun getProductSpecification(
+    suspend fun getProductSpecification(
         device: String,
         type: ProductType
-    ): Resource<ProductSpecificationResponse> {
-        try {
-            val document = JsoupConfig.connectProductDetailsWebUrl(
-                device.toParameter(),
-                type
-            )
+    ): ProductSpecificationResponse {
 
-            val cardElements = document.select("body>div.main-container>main>article>div.card")
-            val productDetails = getProductDetails(cardElements.get(0))
-            val specifications = mutableListOf<SpecificationItem>()
+        val document = JsoupConfig.connectProductDetailsWebUrl(
+            device.toParameter(),
+            type
+        )
 
-            cardElements.forEach {
-                val specificationItem = extractDataFromCard(it)
-                if (specificationItem.specificationsColumn.isNotEmpty() || specificationItem.specificationsTable.isNotEmpty()) {
-                    specifications.add(specificationItem)
-                }
+        val cardElements = document.select("body>div.main-container>main>article>div.card")
+        val productDetails = getProductDetails(cardElements.get(0))
+        val specifications = mutableListOf<SpecificationItem>()
+
+        cardElements.forEach {
+            val specificationItem = extractDataFromCard(it)
+            if (specificationItem.specificationsColumn.isNotEmpty() || specificationItem.specificationsTable.isNotEmpty()) {
+                specifications.add(specificationItem)
             }
-            return Resource.Success(ProductSpecificationResponse(productDetails, specifications))
-        } catch (e: Exception) {
-            return Resource.Error(e.message ?: "")
         }
-        return Resource.Loading
+        return ProductSpecificationResponse(productDetails, specifications)
     }
 
     private fun getProductDetails(element: Element): ProductSpecification {
@@ -84,7 +86,7 @@ object DetailApi {
             val specificationItem = extractDataFromCard(it)
             val title = it.selectFirst("div.card-block>div.card-head")?.text()
 
-            if (title?.toLowerCase() == "key differences") keyDifference = getKeyDifferences(it)
+            if (title?.lowercase(Locale.getDefault()) == "key differences") keyDifference = getKeyDifferences(it)
 
             if (specificationItem.specificationsColumn.isNotEmpty() || specificationItem.specificationsTable.isNotEmpty()) {
                 compares.add(specificationItem)

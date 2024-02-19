@@ -88,10 +88,11 @@ fun AutoCompleteSearchField(
                             text = it.name,
                             modifier = Modifier
                                 .clickable {
+                                    expanded = false
                                     inputValue = it.name
                                     onSearch(it.name)
                                     selectedValue = it.name
-                                    expanded = false }
+                                }
                                 .padding(16.dp)
                                 .fillMaxWidth()
                         )

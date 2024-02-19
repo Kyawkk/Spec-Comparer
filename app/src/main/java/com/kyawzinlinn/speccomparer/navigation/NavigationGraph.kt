@@ -35,6 +35,7 @@ fun NavigationGraph(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val sharedUiState by sharedUiViewmodel.uiState.collectAsStateWithLifecycle()
 
     NavHost(
         navController = navController, modifier = modifier, startDestination = ScreenRoute.Home.name
@@ -88,12 +89,10 @@ fun NavigationGraph(
             }
 
             ProductDetailScreen(
+                product = product,
+                productType = productType,
                 uiState = uiState,
-                isSearching = isSearching,
-                suggestions = uiState.suggestions,
-                onValueChange = {
-                    viewModel.getSuggestions(it, 8, productType)
-                },
+                showBottomSheet = sharedUiState.showCompareBottomSheet,
                 onDismissBottomSheet = sharedUiViewmodel::hideCompareBottomSheet,
                 onCompare = { firstDevice, secondDevice ->
                     viewModel.compareProducts(firstDevice, secondDevice, productType)

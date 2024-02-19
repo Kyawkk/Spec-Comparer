@@ -80,12 +80,14 @@ fun SearchScreen(
         modifier = modifier.fillMaxSize()
     ) {
 
-        AutoCompleteSearchField(suggestions = suggestions,
+        AutoCompleteSearchField(
+            suggestions = suggestions,
             defaultValue = selectedQuery,
             onSearch = { searchViewModel.search(it, productType) },
             onValueChange = { searchViewModel.getSuggestions(it, productType) })
 
         if (showLoading) LoadingScreen()
+
         else {
             SearchResultList(
                 searchResults = searchResults,
