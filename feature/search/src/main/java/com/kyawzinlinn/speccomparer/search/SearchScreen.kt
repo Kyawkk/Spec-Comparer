@@ -116,6 +116,7 @@ fun SearchResultList(
         items(searchResults) { product ->
             Card(onClick = { onProductItemClick(product) }, modifier = Modifier.animateItemPlacement()) {
                 Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .animateContentSize(
@@ -130,12 +131,13 @@ fun SearchResultList(
                         onError = { onRemoveErrorItem(product) },
                         model = ImageRequest.Builder(context).data(product.imageUrl).crossfade(true)
                             .build(),
-                        modifier = Modifier,
+                        modifier = Modifier.weight(0.2f),
                         contentDescription = null
                     )
-                    Spacer(Modifier.width(8.dp))
                     Text(
-                        text = product.name, style = MaterialTheme.typography.titleMedium
+                        text = product.name,
+                        modifier = Modifier.weight(0.8f),
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
