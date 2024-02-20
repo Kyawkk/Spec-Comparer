@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.kyawzinlinn.speccomparer.compare
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,6 +40,7 @@ import coil.request.ImageRequest
 import com.kyawzinlinn.speccomparer.compare.components.CompareCard
 import com.kyawzinlinn.speccomparer.components.CompareScoreBar
 import com.kyawzinlinn.speccomparer.components.CompareScoreRow
+import com.kyawzinlinn.speccomparer.components.LoadingScreen
 import com.kyawzinlinn.speccomparer.components.SpecColumnItem
 import com.kyawzinlinn.speccomparer.data.DataSource
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareDetailResponse
@@ -54,7 +59,7 @@ fun CompareScreen(
     productType: ProductType,
     compareViewModel: CompareViewModel = hiltViewModel()
 ) {
-    var data by remember { mutableStateOf("") }
+    var showLoading by remember { mutableStateOf(false) }
     val compareResponse by compareViewModel.compareResponse.collectAsStateWithLifecycle()
     var compareDetail by remember { mutableStateOf<CompareResponse?>(null) }
 
@@ -64,14 +69,22 @@ fun CompareScreen(
 
     LaunchedEffect (compareResponse) {
         when (compareResponse){
-            is Resource.Loading -> "Loading"
+            is Resource.Loading -> showLoading = true
             is Resource.Success -> {
+                showLoading = false
                 compareDetail = (compareResponse as Resource.Success<CompareResponse>).data
             }
-            is Resource.Error -> (compareResponse as Resource.Error<CompareResponse>).message
-            else -> ""
+            is Resource.Error -> {
+                showLoading = false
+                (compareResponse as Resource.Error<CompareResponse>).message
+            }
+            else -> {
+                showLoading = false
+            }
         }
     }
+
+    if (showLoading) LoadingScreen()
 
     Column(
         modifier = Modifier
@@ -86,6 +99,7 @@ fun CompareScreen(
 private fun CompareDetailContent(
     compareResponse: CompareResponse, modifier: Modifier = Modifier
 ) {
+    var stickyTitle by remember { mutableStateOf("") }
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -94,11 +108,15 @@ private fun CompareDetailContent(
         item { HeaderSection(compareHeaderDetails = compareResponse.compareDeviceHeaderDetails!!) }
         item { KeyDifferences(keyDifferences = compareResponse.keyDifferences!!) }
         items(compareResponse.compareSpecDetails) {
-            CompareSpecItem(
-                firstDevice = compareResponse.compareDeviceHeaderDetails!!.firstDeviceName,
-                secondDevice = compareResponse.compareDeviceHeaderDetails!!.secondDeviceName,
-                compareDetailResponse = it!!
-            )
+            stickyTitle = it!!.title
+            key (it!!.title) {
+                CompareSpecItem(
+                    firstDevice = compareResponse.compareDeviceHeaderDetails!!.firstDeviceName,
+                    secondDevice = compareResponse.compareDeviceHeaderDetails!!.secondDeviceName,
+                    compareDetailResponse = it!!,
+                    hasExpanded = false
+                )
+            }
         }
     }
 }
@@ -107,12 +125,20 @@ private fun CompareDetailContent(
 private fun CompareSpecItem(
     firstDevice: String,
     secondDevice: String,
+    hasExpanded: Boolean,
     compareDetailResponse: CompareDetailResponse,
     modifier: Modifier = Modifier
 ) {
-    CompareCard(title = compareDetailResponse.title, modifier = modifier) {
+    var expanded by remember { mutableStateOf(hasExpanded) }
+
+    LaunchedEffect (hasExpanded) {
+        expanded = hasExpanded
+    }
+
+    CompareCard(title = compareDetailResponse.title, modifier = modifier, onVisibleChanged = {expanded = it}) {
         compareDetailResponse.scoreBars.forEach {compareScoreBar ->
             CompareScoreBar(
+                expanded = expanded,
                 firstDevice = firstDevice,
                 secondDevice = secondDevice,
                 compareScoreBar = compareScoreBar!!
@@ -167,6 +193,7 @@ private fun HeaderSection(
     val context = LocalContext.current
     CompareCard(
         title = "${compareHeaderDetails.firstDeviceName} vs ${compareHeaderDetails.secondDeviceName}",
+        expandable = false,
         modifier = modifier.fillMaxWidth()
     ) {
         Column {

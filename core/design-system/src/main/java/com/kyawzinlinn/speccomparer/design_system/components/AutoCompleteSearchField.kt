@@ -4,15 +4,12 @@ package com.kyawzinlinn.speccomparer.design_system.components
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -50,24 +47,28 @@ fun AutoCompleteSearchField(
     onValueChange: (String) -> Unit,
     onSearch: (String) -> Unit
 ) {
-    val TAG = "AutoCompleteSearchField"
     var selectedValue by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var searchFieldSize by remember { mutableStateOf(Size.Zero) }
     var inputValue by remember { mutableStateOf(defaultValue) }
-    val interactionSource = remember { MutableInteractionSource() }
 
     LaunchedEffect(defaultValue) {
         inputValue = defaultValue
+    }
+
+    LaunchedEffect (suggestions) {
+        if (suggestions.isEmpty()) expanded = false
     }
 
     LaunchedEffect(inputValue) {
         expanded = suggestions.isNotEmpty()
     }
 
-    Column(modifier = modifier
-        .fillMaxWidth()
-        .padding(horizontal = 16.dp)) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
 
         SearchBar(
             input = inputValue,
@@ -75,27 +76,28 @@ fun AutoCompleteSearchField(
                 inputValue = it
                 onValueChange(it)
             },
-            onSearch = onSearch,
-            modifier = Modifier
-                .onGloballyPositioned { coordinates -> searchFieldSize = coordinates.size.toSize() },
+            onSearch = {
+                expanded = false
+                onSearch(it)
+            },
+            modifier = Modifier.onGloballyPositioned { coordinates ->
+                    searchFieldSize = coordinates.size.toSize()
+                },
         )
         Spacer(modifier = Modifier.height(8.dp))
         AnimatedVisibility(visible = expanded) {
             Card {
-                LazyColumn (modifier = Modifier.height(180.dp)) {
+                LazyColumn(modifier = Modifier.height(180.dp)) {
                     items(suggestions) {
-                        Text(
-                            text = it.name,
-                            modifier = Modifier
-                                .clickable {
-                                    expanded = false
-                                    inputValue = it.name
-                                    onSearch(it.name)
-                                    selectedValue = it.name
-                                }
-                                .padding(16.dp)
-                                .fillMaxWidth()
-                        )
+                        Text(text = it.name, modifier = Modifier
+                            .clickable {
+                                expanded = false
+                                inputValue = it.name
+                                onSearch(it.name)
+                                selectedValue = it.name
+                            }
+                            .padding(16.dp)
+                            .fillMaxWidth())
                     }
                 }
             }
@@ -145,7 +147,7 @@ fun ExposedDropdownMenuSample() {
     var selectedOptionText by remember { mutableStateOf(options[0]) }
     var textFieldSize by remember { mutableStateOf(Size.Zero) }
 
-    LaunchedEffect (textFieldSize) {
+    LaunchedEffect(textFieldSize) {
         Log.d("TAG", "ExposedDropdownMenuSample: ${textFieldSize.width}")
     }
 
@@ -169,8 +171,7 @@ fun ExposedDropdownMenuSample() {
                 value = selectedOptionText,
                 onValueChange = {},
                 colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = Color.Green,
-                    focusedContainerColor = Color.Green
+                    unfocusedContainerColor = Color.Green, focusedContainerColor = Color.Green
                 ),
                 label = { Text("Label") },
             )

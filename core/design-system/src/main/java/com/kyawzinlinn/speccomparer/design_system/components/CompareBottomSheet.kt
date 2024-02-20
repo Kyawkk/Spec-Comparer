@@ -40,7 +40,7 @@ fun CompareBottomSheet(
     suggestions: List<Product>
 ) {
     var showBottomSheetValue by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
     LaunchedEffect (Unit) {
         sheetState.expand()

@@ -20,18 +20,19 @@ import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScoreBar
 
 @Composable
 fun CompareScoreBar(
+    expanded: Boolean,
     firstDevice: String,
     secondDevice: String,
     compareScoreBar: CompareScoreBar,
     modifier: Modifier = Modifier
 ) {
     val firstAnimatedProgress by animateFloatAsState(
-        targetValue = compareScoreBar.firstSpecValue.replace("%", "").toFloat() / 100f,
+        targetValue = if(expanded) compareScoreBar.firstSpecValue.replace("%", "").toFloat() / 100f else 0f,
         animationSpec = tween(1000), label = ""
     )
 
     val secondAnimatedProgress by animateFloatAsState(
-        targetValue = compareScoreBar.secondSpecValue.replace("%", "").toFloat() / 100f,
+        targetValue = if(expanded) compareScoreBar.secondSpecValue.replace("%", "").toFloat() / 100f else 0f,
         animationSpec = tween(1000), label = ""
     )
 
@@ -42,7 +43,7 @@ fun CompareScoreBar(
             Row {
                 Text(text = firstDevice)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = compareScoreBar.firstSpecValue)
+                Text(text = compareScoreBar.firstSpecName)
             }
             Spacer(modifier = Modifier.height(8.dp))
             LinearProgressIndicator(
@@ -57,7 +58,7 @@ fun CompareScoreBar(
             Row {
                 Text(text = secondDevice)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = compareScoreBar.secondSpecValue)
+                Text(text = compareScoreBar.secondSpecName)
             }
             Spacer(modifier = Modifier.height(8.dp))
             LinearProgressIndicator(

@@ -8,18 +8,19 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -33,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -52,7 +54,6 @@ import coil.request.ImageRequest
 import com.kyawzinlinn.speccomparer.design_system.UiState
 import com.kyawzinlinn.speccomparer.design_system.components.CompareBottomSheet
 import com.kyawzinlinn.speccomparer.design_system.components.LoadingScreen
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecification
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationItem
@@ -69,19 +70,36 @@ fun ProductDetailScreen(
     showBottomSheet: Boolean,
     onCompare: (String, String) -> Unit,
     onDismissBottomSheet: () -> Unit,
-    modifier: Modifier = Modifier.padding(16.dp),
+    modifier: Modifier = Modifier,
     detailViewModel: DetailViewModel = hiltViewModel()
 ) {
 
     var firstProductDetails by remember { mutableStateOf("") }
     val detailResponse by detailViewModel.detailResponse.collectAsStateWithLifecycle()
     val suggestions by detailViewModel.suggestions.collectAsStateWithLifecycle()
-
+    var showLoading by remember { mutableStateOf(false) }
     var compareUiState by remember { mutableStateOf(UiState()) }
+    var productSpecification by remember { mutableStateOf<ProductSpecificationResponse?>(null) }
 
     LaunchedEffect(uiState.compareDetails) { compareUiState = uiState }
     LaunchedEffect (Unit) { detailViewModel.resetSuggestions() }
     LaunchedEffect(Unit) { detailViewModel.getProductDetailSpecification(product, productType) }
+
+    LaunchedEffect (detailResponse) {
+        when (detailResponse) {
+            is Resource.Loading -> showLoading = true
+            is Resource.Success -> {
+                showLoading = false
+                productSpecification = (detailResponse as Resource.Success<ProductSpecificationResponse>).data
+            }
+            is Resource.Error -> {
+                showLoading = false
+            }
+            else -> {
+                showLoading = false
+            }
+        }
+    }
 
     CompareBottomSheet(
         suggestions = suggestions,
@@ -92,31 +110,20 @@ fun ProductDetailScreen(
         onDismissBottomSheet = onDismissBottomSheet
     )
 
-    Row(modifier = modifier.fillMaxSize()) {
-        Column(modifier = Modifier.weight(if (uiState.isCompareState) 0.5f else 1f)) {
-            when (detailResponse) {
-                is Resource.Loading -> LoadingScreen()
-                is Resource.Success -> {
-                    val response =
-                        (detailResponse as Resource.Success<ProductSpecificationResponse>).data
-                    firstProductDetails = response.productSpecification.productName
-                    ProductDetailContent(response)
-                }
-                is Resource.Error -> {}
-                else -> {}
-            }
-        }
+    Column (modifier = modifier.fillMaxSize()) {
+        if (showLoading) LoadingScreen()
+        if (productSpecification != null) ProductDetailContent(productSpecificationResponse = productSpecification!!)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SpecItemList(specificationItem: SpecificationItem) {
+fun SpecItemList(specificationItem: SpecificationItem, modifier: Modifier = Modifier) {
     var expanded by rememberSaveable { mutableStateOf(false) }
 
     Card(
         onClick = { expanded = !expanded },
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
@@ -235,46 +242,50 @@ fun SpecColumnItem(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ProductDetailContent(
     productSpecificationResponse: ProductSpecificationResponse, modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier.verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(16.dp)
     ) {
-        Card(
-            modifier = Modifier
-        ) {
-            Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(ImageUrlBuilder.build(productSpecificationResponse.productSpecification.productImageUrl))
-                        .crossfade(true).build(),
-                    modifier = Modifier.weight(0.2f),
-                    contentScale = ContentScale.FillBounds,
-                    contentDescription = null
-                )
-                Column(
-                    modifier = Modifier.weight(0.8f),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    productSpecificationResponse.productSpecification.productDetails.forEach {
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = it.name, style = MaterialTheme.typography.titleSmall
-                            )
-                            Text(
-                                text = " - ${it.value}", style = MaterialTheme.typography.titleSmall
-                            )
+
+        item {
+            Card(
+                modifier = Modifier
+            ) {
+                Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(ImageUrlBuilder.build(productSpecificationResponse.productSpecification.productImageUrl))
+                            .crossfade(true).build(),
+                        modifier = Modifier.weight(0.2f),
+                        contentScale = ContentScale.FillBounds,
+                        contentDescription = null
+                    )
+                    Column(
+                        modifier = Modifier.weight(0.8f),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        productSpecificationResponse.productSpecification.productDetails.forEach {
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Text(
+                                    text = it.name, style = MaterialTheme.typography.titleSmall
+                                )
+                                Text(
+                                    text = " - ${it.value}", style = MaterialTheme.typography.titleSmall
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-        productSpecificationResponse.productSpecifications.map { specification ->
-            SpecItemList(specification)
+        items(productSpecificationResponse.productSpecifications) { specification ->
+            SpecItemList(specification, modifier = Modifier.animateItemPlacement())
         }
     }
 }

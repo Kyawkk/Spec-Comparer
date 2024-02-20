@@ -1,6 +1,6 @@
 package com.kyawzinlinn.speccomparer.domain.model.smartphone
 
 data class ProductSpecificationResponse(
-    val productSpecification: ProductSpecification,
+    val productSpecification: ProductSpecification = ProductSpecification(),
     val productSpecifications : List<SpecificationItem> = emptyList()
 )

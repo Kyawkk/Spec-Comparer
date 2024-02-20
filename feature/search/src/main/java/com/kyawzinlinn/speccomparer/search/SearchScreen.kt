@@ -58,6 +58,10 @@ fun SearchScreen(
     var showLoading by remember { mutableStateOf(false) }
     val selectedQuery by searchViewModel.selectedQuery.collectAsStateWithLifecycle()
 
+    LaunchedEffect (Unit) {
+        searchViewModel.clearSuggestions()
+    }
+
     LaunchedEffect(searchResponse) {
         when (searchResponse) {
             is Resource.Loading -> {

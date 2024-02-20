@@ -63,4 +63,8 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
+
+    fun clearSuggestions() {
+        _suggestions.value = emptyList()
+    }
 }
