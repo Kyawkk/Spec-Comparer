@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -40,10 +41,14 @@ fun CompareBottomSheet(
     suggestions: List<Product>
 ) {
     var showBottomSheetValue by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    var firstDeviceName by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
 
-    LaunchedEffect (Unit) {
-        sheetState.expand()
+    LaunchedEffect (firstDevice) {
+        firstDeviceName = firstDevice
     }
 
     LaunchedEffect(showBottomSheet) {
@@ -80,6 +85,10 @@ private fun BottomSheetContent(
 ) {
     var firstDeviceInput by remember { mutableStateOf(firstDevice) }
     var secondDeviceInput by remember { mutableStateOf("") }
+
+    LaunchedEffect (firstDevice) {
+        firstDeviceInput = firstDevice
+    }
 
     Column (modifier = modifier) {
         SearchDeviceItem(

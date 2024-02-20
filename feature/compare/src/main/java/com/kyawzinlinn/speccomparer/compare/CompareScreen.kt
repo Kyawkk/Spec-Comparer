@@ -31,6 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,9 +43,8 @@ import coil.request.ImageRequest
 import com.kyawzinlinn.speccomparer.compare.components.CompareCard
 import com.kyawzinlinn.speccomparer.components.CompareScoreBar
 import com.kyawzinlinn.speccomparer.components.CompareScoreRow
-import com.kyawzinlinn.speccomparer.components.LoadingScreen
-import com.kyawzinlinn.speccomparer.components.SpecColumnItem
-import com.kyawzinlinn.speccomparer.data.DataSource
+import com.kyawzinlinn.speccomparer.components.buildCompareTitle
+import com.kyawzinlinn.speccomparer.components.handleResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareDetailResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareKeyDifferences
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
@@ -50,7 +52,6 @@ import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScore
 import com.kyawzinlinn.speccomparer.domain.model.compare.KeyDifference
 import com.kyawzinlinn.speccomparer.domain.utils.ImageUrlBuilder
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
-import com.kyawzinlinn.speccomparer.domain.utils.Resource
 
 @Composable
 fun CompareScreen(
@@ -64,27 +65,17 @@ fun CompareScreen(
     var compareDetail by remember { mutableStateOf<CompareResponse?>(null) }
 
     LaunchedEffect(Unit) {
-        compareViewModel.compare(firstDevice,secondDevice,productType)
+        compareViewModel.compare(firstDevice, secondDevice, productType)
     }
 
-    LaunchedEffect (compareResponse) {
-        when (compareResponse){
-            is Resource.Loading -> showLoading = true
-            is Resource.Success -> {
-                showLoading = false
-                compareDetail = (compareResponse as Resource.Success<CompareResponse>).data
-            }
-            is Resource.Error -> {
-                showLoading = false
-                (compareResponse as Resource.Error<CompareResponse>).message
-            }
-            else -> {
-                showLoading = false
-            }
+    handleResponse(
+        resource = compareResponse,
+        onRetry = {
+            compareViewModel.compare(firstDevice, secondDevice, productType)
         }
+    ) {
+        compareDetail = it
     }
-
-    if (showLoading) LoadingScreen()
 
     Column(
         modifier = Modifier
@@ -105,11 +96,15 @@ private fun CompareDetailContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
     ) {
-        item { HeaderSection(compareHeaderDetails = compareResponse.compareDeviceHeaderDetails!!) }
+        item {
+            key(compareResponse.compareDeviceHeaderDetails!!.firstDeviceName) {
+                HeaderSection(compareHeaderDetails = compareResponse.compareDeviceHeaderDetails!!)
+            }
+        }
         item { KeyDifferences(keyDifferences = compareResponse.keyDifferences!!) }
         items(compareResponse.compareSpecDetails) {
             stickyTitle = it!!.title
-            key (it!!.title) {
+            key(it!!.title) {
                 CompareSpecItem(
                     firstDevice = compareResponse.compareDeviceHeaderDetails!!.firstDeviceName,
                     secondDevice = compareResponse.compareDeviceHeaderDetails!!.secondDeviceName,
@@ -131,12 +126,15 @@ private fun CompareSpecItem(
 ) {
     var expanded by remember { mutableStateOf(hasExpanded) }
 
-    LaunchedEffect (hasExpanded) {
+    LaunchedEffect(hasExpanded) {
         expanded = hasExpanded
     }
 
-    CompareCard(title = compareDetailResponse.title, modifier = modifier, onVisibleChanged = {expanded = it}) {
-        compareDetailResponse.scoreBars.forEach {compareScoreBar ->
+    CompareCard(
+        title = compareDetailResponse.title,
+        modifier = modifier,
+        onVisibleChanged = { expanded = it }) {
+        compareDetailResponse.scoreBars.forEach { compareScoreBar ->
             CompareScoreBar(
                 expanded = expanded,
                 firstDevice = firstDevice,
@@ -168,7 +166,7 @@ fun KeyDifferenceItem(
     keyDifference: KeyDifference,
     modifier: Modifier = Modifier
 ) {
-    Column (modifier = modifier) {
+    Column(modifier = modifier) {
         Text(text = keyDifference.title, style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         keyDifference.pros.forEach {
@@ -203,7 +201,14 @@ private fun HeaderSection(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(text = compareHeaderDetails.firstScore)
+                    val text = compareHeaderDetails.firstScore
+                    val annotatedString = buildAnnotatedString {
+                        withStyle(style = SpanStyle(background = MaterialTheme.colorScheme.primary)) {
+                            append(text.substring(0, 2))
+                        }
+                        append(text.substring(2)) // Append the rest of the string
+                    }
+                    Text(text = buildCompareTitle(title = compareHeaderDetails.firstScore))
                     AsyncImage(
                         model = ImageRequest
                             .Builder(context)
@@ -221,7 +226,7 @@ private fun HeaderSection(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(text = compareHeaderDetails.secondScore)
+                    Text(text = buildCompareTitle(title = compareHeaderDetails.secondScore))
                     AsyncImage(
                         model = ImageRequest
                             .Builder(context)

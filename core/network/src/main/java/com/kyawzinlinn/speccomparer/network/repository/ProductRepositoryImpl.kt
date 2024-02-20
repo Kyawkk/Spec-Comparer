@@ -10,6 +10,7 @@ import com.kyawzinlinn.speccomparer.domain.utils.Resource
 import com.kyawzinlinn.speccomparer.network.api.ApiService
 import com.kyawzinlinn.speccomparer.network.api.CompareApi
 import com.kyawzinlinn.speccomparer.network.api.DetailApi
+import com.kyawzinlinn.speccomparer.network.api.ExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -23,7 +24,7 @@ class ProductRepositoryImpl(private val apiService: ApiService) : ProductReposit
             Resource.Success(response)
         } catch (e: Exception) {
             e.printStackTrace()
-            Resource.Error(e.message.toString())
+            ExceptionHandler.handleError(e)
         }
     }
 
@@ -35,7 +36,7 @@ class ProductRepositoryImpl(private val apiService: ApiService) : ProductReposit
         }
     } catch (e: Exception) {
         e.printStackTrace()
-        Resource.Error(e.message.toString())
+        ExceptionHandler.handleError(e)
     }
 
     override suspend fun compareProducts(

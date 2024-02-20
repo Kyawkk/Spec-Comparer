@@ -54,7 +54,7 @@ object CompareApi {
                 )
             )
         } catch (e: Exception) {
-            return Resource.Error(e.message.toString())
+            return ExceptionHandler.handleError(e)
         }
     }
 
@@ -207,7 +207,7 @@ fun main() {
             println(state.data)
         }
         is Resource.Error -> {
-            println(state.message)
+            //println(state.message)
         }
         else -> {
             println("else")
