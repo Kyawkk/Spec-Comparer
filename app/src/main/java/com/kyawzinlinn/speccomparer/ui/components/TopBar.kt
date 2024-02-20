@@ -38,6 +38,11 @@ fun TopBar(
 ) {
     var canNavigateBackValue by remember { mutableStateOf(false) }
     var showTrailingIconValue by remember { mutableStateOf(false) }
+    var topBarTitle by remember { mutableStateOf("") }
+
+    LaunchedEffect (title) {
+        topBarTitle = title
+    }
 
     LaunchedEffect(canNavigateBackValue, showTrailingIconValue) {
         canNavigateBackValue = canNavigateBack
@@ -46,7 +51,7 @@ fun TopBar(
 
     CenterAlignedTopAppBar(title = {
         AnimatedContent(
-            targetState = title, modifier = Modifier.fillMaxWidth(), transitionSpec = {
+            targetState = topBarTitle, modifier = Modifier.fillMaxWidth(), transitionSpec = {
                 fadeIn() + slideInVertically(animationSpec = tween(400),
                     initialOffsetY = { it }) togetherWith fadeOut(
                     animationSpec = tween(
