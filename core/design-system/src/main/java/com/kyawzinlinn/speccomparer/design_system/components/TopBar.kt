@@ -66,21 +66,20 @@ fun TopBar(
         }
     },
         navigationIcon = {
-            if (canNavigateBack) {
-                IconButton(onClick = navigateUp) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack, contentDescription = null
-                    )
-                }
+            IconButton(onClick = navigateUp) {
+                if (canNavigateBack) Icon(
+                    imageVector = Icons.Default.ArrowBack, contentDescription = null
+                )
+                else null
             }
         },
         actions = {
-            if(showTrailingIcon) {
-                IconButton(onClick = onTrailingIconClick) {
+            IconButton(onClick = onTrailingIconClick) {
+                if (showTrailingIcon) {
                     Icon(
                         imageVector = Icons.Default.Compare, contentDescription = null
                     )
-                }
+                } else null
             }
         }
     )

@@ -77,7 +77,6 @@ fun NavigationGraph(
         composable("${ScreenRoute.Details.name}/{product}/{productType}") {
             val product = it.arguments?.getString("product") ?: ""
             val productType = ProductType.valueOf(it.arguments?.getString("productType") ?: "")
-            val isSearching by viewModel.isSearching.collectAsState()
 
             sharedUiViewmodel.apply {
                 updateTitle(product)
