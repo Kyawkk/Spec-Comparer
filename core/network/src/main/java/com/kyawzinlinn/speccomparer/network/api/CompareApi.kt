@@ -1,5 +1,6 @@
 package com.kyawzinlinn.speccomparer.network.api
 
+import android.util.Log
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareDetailResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareKeyDifferences
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
@@ -13,8 +14,8 @@ import com.kyawzinlinn.speccomparer.domain.utils.Resource
 import com.kyawzinlinn.speccomparer.domain.utils.toParameter
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
-
 object CompareApi {
+    private const val TAG = "Compare API"
     fun compareDevices(
         firstDevice: String,
         secondDevice: String,
@@ -35,7 +36,8 @@ object CompareApi {
 
             cards.forEach {
                 val title = it.select("div.card-block>div.card-head>h2").text()
-                if (title.lowercase().equals("key differences")) {
+                Log.d(TAG, "compareDevices: ${title.lowercase()}")
+                if (title.lowercase() == "key differences") {
                     keyDifferences = getKeyDifferences(it)
                 } else {
                     // handle spec data
@@ -176,9 +178,8 @@ object CompareApi {
             val firstTitle = titles.get(0).text()
             val firstPros = pros.get(0).children().toList().map { it.text() }
 
-
-            val secondTitle = titles.get(1).text()
-            val secondPros = pros.get(1).children().toList().map { it.text() }
+            val secondTitle = if (titles.size > 1) titles.get(1).text() else ""
+            val secondPros = if (pros.size > 1) pros.get(1).children().toList().map { it.text() } else emptyList()
 
             return CompareKeyDifferences(
                 title = title,

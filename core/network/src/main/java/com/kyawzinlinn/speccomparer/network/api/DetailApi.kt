@@ -129,8 +129,8 @@ object DetailApi {
         val specificationTable = mutableListOf<SpecificationTable>()
 
         val cardBlocks = element?.select("div.card-block")
-        val title = cardBlocks?.get(0)?.select("div.card-head")?.text() ?: ""
-        cardBlocks?.remove(cardBlocks?.get(0))
+        val title = if (cardBlocks?.size != 0) cardBlocks?.get(0)?.select("div.card-head")?.text() ?: "" else ""
+        if (cardBlocks?.size != 0) cardBlocks?.remove(cardBlocks?.get(0))
         val tables = element?.select("table")
 
         if (tables!!.isNotEmpty()) {

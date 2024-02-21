@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalFoundationApi::class)
 
 package com.kyawzinlinn.speccomparer.compare
 
@@ -68,6 +68,7 @@ import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScore
 import com.kyawzinlinn.speccomparer.domain.model.compare.KeyDifference
 import com.kyawzinlinn.speccomparer.domain.utils.ImageUrlBuilder
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
+import com.kyawzinlinn.speccomparer.domain.utils.safe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -107,7 +108,6 @@ fun CompareScreen(
 private fun CompareDetailContent(
     compareResponse: CompareResponse, modifier: Modifier = Modifier
 ) {
-    var stickyTitle by remember { mutableStateOf("") }
     val scrollState = rememberLazyListState()
     var showStickyTitle by remember { mutableStateOf(false) }
 
@@ -129,22 +129,21 @@ private fun CompareDetailContent(
                 exit =  slideOutVertically { -it } + fadeOut() + shrinkOut(),
                 modifier = Modifier.background(MaterialTheme.colorScheme.background)
             ) {
-                StickyTitleRow(firstDevice = compareResponse.compareDeviceHeaderDetails!!.firstDeviceName, secondDevice = compareResponse.compareDeviceHeaderDetails!!.secondDeviceName)
+                StickyTitleRow(firstDevice = compareResponse.compareDeviceHeaderDetails?.firstDeviceName ?: "", secondDevice = compareResponse.compareDeviceHeaderDetails?.secondDeviceName ?: "")
             }
         }
         item {
-            key(compareResponse.compareDeviceHeaderDetails!!.firstDeviceName) {
-                HeaderSection(compareHeaderDetails = compareResponse.compareDeviceHeaderDetails!!)
+            key(compareResponse.compareDeviceHeaderDetails?.firstDeviceName) {
+                HeaderSection(compareHeaderDetails = compareResponse.compareDeviceHeaderDetails)
             }
         }
-        item { KeyDifferences(keyDifferences = compareResponse.keyDifferences!!) }
+        item { KeyDifferences(keyDifferences = compareResponse.keyDifferences) }
         items(compareResponse.compareSpecDetails) {
-            stickyTitle = it!!.title
-            key(it!!.title) {
+            key(it?.title) {
                 CompareSpecItem(
-                    firstDevice = compareResponse.compareDeviceHeaderDetails!!.firstDeviceName,
-                    secondDevice = compareResponse.compareDeviceHeaderDetails!!.secondDeviceName,
-                    compareDetailResponse = it!!,
+                    firstDevice = compareResponse.compareDeviceHeaderDetails.safe { headerDetails -> headerDetails.firstDeviceName },
+                    secondDevice = compareResponse.compareDeviceHeaderDetails.safe { headerDetails -> headerDetails.secondDeviceName },
+                    compareDetailResponse = it,
                     hasExpanded = false
                 )
             }
@@ -195,7 +194,7 @@ private fun CompareSpecItem(
     firstDevice: String,
     secondDevice: String,
     hasExpanded: Boolean,
-    compareDetailResponse: CompareDetailResponse,
+    compareDetailResponse: CompareDetailResponse?,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(hasExpanded) }
@@ -205,10 +204,10 @@ private fun CompareSpecItem(
     }
 
     CompareCard(
-        title = compareDetailResponse.title,
+        title = compareDetailResponse?.title ?: "",
         modifier = modifier,
         onVisibleChanged = { expanded = it }) {
-        compareDetailResponse.scoreBars.forEach { compareScoreBar ->
+        compareDetailResponse?.scoreBars?.forEach { compareScoreBar ->
             CompareScoreBar(
                 expanded = expanded,
                 firstDevice = firstDevice,
@@ -217,7 +216,7 @@ private fun CompareSpecItem(
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
-        compareDetailResponse.scoreRows.forEach { scoreRow ->
+        compareDetailResponse?.scoreRows?.forEach { scoreRow ->
             CompareScoreRow(compareScoreRow = scoreRow!!)
         }
     }
@@ -225,25 +224,25 @@ private fun CompareSpecItem(
 
 @Composable
 private fun KeyDifferences(
-    keyDifferences: CompareKeyDifferences,
+    keyDifferences: CompareKeyDifferences?,
     modifier: Modifier = Modifier
 ) {
-    CompareCard(title = keyDifferences.title, modifier = modifier) {
-        KeyDifferenceItem(keyDifference = keyDifferences.firstKeyDifference)
+    CompareCard(title = keyDifferences?.title ?: "", modifier = modifier) {
+        KeyDifferenceItem(keyDifference = keyDifferences?.firstKeyDifference)
         Spacer(modifier = Modifier.height(16.dp))
-        KeyDifferenceItem(keyDifference = keyDifferences.secondDifference)
+        if (keyDifferences?.secondDifference?.title!!.isNotEmpty()) KeyDifferenceItem(keyDifference = keyDifferences?.secondDifference)
     }
 }
 
 @Composable
 fun KeyDifferenceItem(
-    keyDifference: KeyDifference,
+    keyDifference: KeyDifference?,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        Text(text = keyDifference.title, style = MaterialTheme.typography.titleMedium)
+        Text(text = keyDifference?.title ?: "", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        keyDifference.pros.forEach {
+        keyDifference?.pros?.forEach {
             Row {
                 Icon(
                     imageVector = Icons.Default.Check,
@@ -259,12 +258,16 @@ fun KeyDifferenceItem(
 
 @Composable
 private fun HeaderSection(
-    compareHeaderDetails: CompareScore,
+    compareHeaderDetails: CompareScore?,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val firstDevice = compareHeaderDetails.safe { it.firstDeviceName }
+    val secondDevice = compareHeaderDetails.safe { it.secondDeviceName }
+    val firstScore = buildCompareTitle(title = compareHeaderDetails.safe { it.firstScore })
+    val secondScore = buildCompareTitle(title = compareHeaderDetails.safe { it.secondScore })
     CompareCard(
-        title = "${compareHeaderDetails.firstDeviceName} vs ${compareHeaderDetails.secondDeviceName}",
+        title = "$firstDevice vs $secondDevice",
         expandable = false,
         modifier = modifier.fillMaxWidth()
     ) {
@@ -275,24 +278,17 @@ private fun HeaderSection(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    val text = compareHeaderDetails.firstScore
-                    val annotatedString = buildAnnotatedString {
-                        withStyle(style = SpanStyle(background = MaterialTheme.colorScheme.primary)) {
-                            append(text.substring(0, 2))
-                        }
-                        append(text.substring(2)) // Append the rest of the string
-                    }
-                    Text(text = buildCompareTitle(title = compareHeaderDetails.firstScore))
+                    if (firstScore.trim().isNotEmpty())Text(text = firstScore)
                     AsyncImage(
                         model = ImageRequest
                             .Builder(context)
-                            .data(ImageUrlBuilder.build(compareHeaderDetails.firstImgUrl))
+                            .data(ImageUrlBuilder.build(compareHeaderDetails.safe { it.firstImgUrl }))
                             .error(com.google.android.material.R.drawable.ic_clock_black_24dp)
                             .build(),
                         modifier = Modifier.size(100.dp),
                         contentDescription = null
                     )
-                    Text(text = compareHeaderDetails.firstDeviceName, textAlign = TextAlign.Center)
+                    Text(text = firstDevice, textAlign = TextAlign.Center)
                 }
 
                 Column(
@@ -300,17 +296,17 @@ private fun HeaderSection(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text(text = buildCompareTitle(title = compareHeaderDetails.secondScore))
+                    if (secondScore.trim().isNotEmpty())Text(text = secondScore)
                     AsyncImage(
                         model = ImageRequest
                             .Builder(context)
-                            .data(ImageUrlBuilder.build(compareHeaderDetails.secondImgUrl))
+                            .data(ImageUrlBuilder.build(compareHeaderDetails.safe { it.secondImgUrl }))
                             .error(com.google.android.material.R.drawable.ic_clock_black_24dp)
                             .build(),
                         modifier = Modifier.size(100.dp),
                         contentDescription = null
                     )
-                    Text(text = compareHeaderDetails.secondDeviceName, textAlign = TextAlign.Center)
+                    Text(text = secondDevice, textAlign = TextAlign.Center)
                 }
             }
         }

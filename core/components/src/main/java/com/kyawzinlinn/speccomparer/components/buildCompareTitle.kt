@@ -21,11 +21,15 @@ fun buildCompareTitle (title: String): AnnotatedString {
         background = MaterialTheme.colorScheme.primary,
         color = Color.White
     )
-    return buildAnnotatedString {
-        withStyle(style = selectedStyle) {
-            append(" ${title.substring(0, 2)} ")
+    return try {
+        buildAnnotatedString {
+            withStyle(style = selectedStyle) {
+                append(" ${title.substring(0, 2)} ")
+            }
+            append(title.substring(2))
         }
-        append(title.substring(2))
+    } catch (e: Exception) {
+        buildAnnotatedString { title }
     }
 }
 
