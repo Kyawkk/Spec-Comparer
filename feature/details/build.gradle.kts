@@ -43,6 +43,7 @@ android {
 
 dependencies {
 
+    implementation(project(":core:components"))
     moduleImplementation(":core:domain")
     moduleImplementation(":core:design-system")
     moduleImplementation(":core:network")

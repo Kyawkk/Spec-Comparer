@@ -1,4 +1,5 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+@file:OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
     ExperimentalMaterial3Api::class
 )
 
@@ -29,6 +30,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kyawzinlinn.speccomparer.domain.model.Product
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun CompareBottomSheet(
@@ -47,7 +52,7 @@ fun CompareBottomSheet(
         skipPartiallyExpanded = true
     )
 
-    LaunchedEffect (firstDevice) {
+    LaunchedEffect(firstDevice) {
         firstDeviceName = firstDevice
     }
 
@@ -58,7 +63,7 @@ fun CompareBottomSheet(
     if (showBottomSheetValue) {
         ModalBottomSheet(
             onDismissRequest = onDismissBottomSheet,
-            dragHandle = {BottomSheetDefaults.DragHandle()},
+            dragHandle = { BottomSheetDefaults.DragHandle() },
             modifier = Modifier
                 .fillMaxSize()
                 .then(modifier),
@@ -69,7 +74,20 @@ fun CompareBottomSheet(
                 modifier = modifier
                     .fillMaxWidth()
             ) {
-                BottomSheetContent(firstDevice = firstDevice, onSearch = onCompare, suggestions = suggestions, onValueChange = onValueChange)
+                BottomSheetContent(
+                    firstDevice = firstDevice,
+                    onCompare = { first, second ->
+                        scope.launch {
+                            sheetState.hide()
+                            delay(100)
+                            withContext(Dispatchers.Main) {
+                                onCompare(first, second)
+                            }
+                        }
+                    },
+                    suggestions = suggestions,
+                    onValueChange = onValueChange
+                )
             }
         }
     }
@@ -80,17 +98,17 @@ private fun BottomSheetContent(
     suggestions: List<Product>,
     firstDevice: String,
     onValueChange: (String) -> Unit,
-    onSearch: (String, String) -> Unit,
+    onCompare: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var firstDeviceInput by remember { mutableStateOf(firstDevice) }
     var secondDeviceInput by remember { mutableStateOf("") }
 
-    LaunchedEffect (firstDevice) {
+    LaunchedEffect(firstDevice) {
         firstDeviceInput = firstDevice
     }
 
-    Column (modifier = modifier) {
+    Column(modifier = modifier) {
         SearchDeviceItem(
             title = "First Device",
             defaultValue = firstDevice,
@@ -115,7 +133,7 @@ private fun BottomSheetContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            onClick = { onSearch(firstDeviceInput, secondDeviceInput) }) {
+            onClick = { onCompare(firstDeviceInput, secondDeviceInput) }) {
             Text(text = "compare".uppercase())
         }
     }
@@ -135,8 +153,17 @@ fun SearchDeviceItem(
         modifier = modifier
             .fillMaxWidth()
     ) {
-        Text(text = title, modifier = Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.titleSmall)
+        Text(
+            text = title,
+            modifier = Modifier.padding(horizontal = 16.dp),
+            style = MaterialTheme.typography.titleSmall
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        AutoCompleteSearchField(defaultValue = defaultValue, suggestions = suggestions, onValueChange = onValueChange, onSearch = onSearch)
+        AutoCompleteSearchField(
+            defaultValue = defaultValue,
+            suggestions = suggestions,
+            onValueChange = onValueChange,
+            onSearch = onSearch
+        )
     }
 }

@@ -269,7 +269,7 @@ private fun HeaderSection(
         modifier = modifier.fillMaxWidth()
     ) {
         Column {
-            Row {
+            Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Column(
                     modifier = Modifier.weight(0.5f),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -292,7 +292,7 @@ private fun HeaderSection(
                         modifier = Modifier.size(100.dp),
                         contentDescription = null
                     )
-                    Text(text = compareHeaderDetails.firstDeviceName)
+                    Text(text = compareHeaderDetails.firstDeviceName, textAlign = TextAlign.Center)
                 }
 
                 Column(
@@ -310,7 +310,7 @@ private fun HeaderSection(
                         modifier = Modifier.size(100.dp),
                         contentDescription = null
                     )
-                    Text(text = compareHeaderDetails.secondDeviceName)
+                    Text(text = compareHeaderDetails.secondDeviceName, textAlign = TextAlign.Center)
                 }
             }
         }

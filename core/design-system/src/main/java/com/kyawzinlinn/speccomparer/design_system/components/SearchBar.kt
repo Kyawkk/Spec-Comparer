@@ -23,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +34,7 @@ fun SearchBar(
     input : String,
     onValueChange: (String) -> Unit,
     onSearch: (String) -> Unit,
+    onFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var value by rememberSaveable { mutableStateOf(input) }
@@ -46,6 +48,7 @@ fun SearchBar(
         maxLines = 1,
         modifier = modifier
             .fillMaxWidth()
+            .onFocusChanged { onFocusChanged(it.isFocused) }
             .border(border = BorderStroke(1.dp,Color.LightGray), shape = RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(6.dp)),
         placeholder = { Text("Search device...") },

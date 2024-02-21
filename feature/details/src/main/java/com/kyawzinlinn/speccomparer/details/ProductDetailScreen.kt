@@ -5,7 +5,6 @@ package com.kyawzinlinn.speccomparer.details
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -32,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -69,11 +67,14 @@ fun ProductDetailScreen(
 
     LaunchedEffect(uiState.compareDetails) { compareUiState = uiState }
     LaunchedEffect(Unit) { detailViewModel.resetSuggestions() }
-    LaunchedEffect(Unit) { detailViewModel.getProductDetailSpecification(product, productType) }
 
-    handleResponse(resource = detailResponse,
-        onRetry = { detailViewModel.getProductDetailSpecification(product, productType) }) {
-        productSpecification = it
+    LaunchedEffect(Unit) { if(productSpecification == null) detailViewModel.getProductDetailSpecification(product, productType) }
+
+    if (productSpecification == null) {
+        handleResponse(resource = detailResponse,
+            onRetry = { detailViewModel.getProductDetailSpecification(product, productType) }) {
+            productSpecification = it
+        }
     }
 
     CompareBottomSheet(
@@ -96,6 +97,7 @@ fun SpecItemList(specificationItem: SpecificationItem, modifier: Modifier = Modi
     var expanded by rememberSaveable { mutableStateOf(false) }
     ExpandableCard(
         title = specificationItem.title,
+        modifier = modifier,
         onExpandedChanged = {
             expanded = it
         }
@@ -170,7 +172,9 @@ private fun ProductDetailContent(
     productSpecificationResponse: ProductSpecificationResponse, modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier,
+        contentPadding = PaddingValues(16.dp)
     ) {
 
         item {
@@ -196,11 +200,13 @@ private fun ProductDetailContent(
                         productSpecificationResponse.productSpecification.productDetails.forEach {
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 Text(
-                                    text = it.name, style = MaterialTheme.typography.titleSmall
+                                    text = it.name, style = MaterialTheme.typography.titleSmall,
+                                    modifier = Modifier.weight(0.2f)
                                 )
                                 Text(
-                                    text = " - ${it.value}",
-                                    style = MaterialTheme.typography.titleSmall
+                                    text = "${it.value.replaceFirstChar { "" }}",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    modifier = Modifier.weight(0.8f)
                                 )
                             }
                         }

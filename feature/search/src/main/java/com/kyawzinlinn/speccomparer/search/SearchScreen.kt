@@ -49,6 +49,7 @@ fun SearchScreen(
     modifier: Modifier = Modifier,
 ) {
     val TAG = "SearchScreen"
+
     var searchResults by rememberSaveable { mutableStateOf(listOf<Product>()) }
     val searchResponse by searchViewModel.searchResultsResponse.collectAsStateWithLifecycle()
     val suggestions by searchViewModel.suggestions.collectAsStateWithLifecycle()
@@ -67,26 +68,6 @@ fun SearchScreen(
         searchResults = it
     }
 
-    /* LaunchedEffect(searchResponse) {
-         withContext(Dispatchers.Main) {
-
-         }
-         when (searchResponse) {
-             is Resource.Loading -> {
-                 showLoading = true
-             }
-
-             is Resource.Success -> {
-                 showLoading = false
-                 searchResults = (searchResponse as Resource.Success<List<Product>>).data
-             }
-
-             else -> {
-                 showLoading = false
-             }
-         }
-     }*/
-
     Column(
         modifier = modifier.fillMaxSize()
     ) {
@@ -96,6 +77,9 @@ fun SearchScreen(
             defaultValue = selectedQuery,
             onSearch = {
                 searchQuery = it
+
+                // clear old search results when user search new product
+                searchResults = emptyList()
                 searchViewModel.search(it, productType)
             },
             onValueChange = { searchViewModel.getSuggestions(it, productType) })
