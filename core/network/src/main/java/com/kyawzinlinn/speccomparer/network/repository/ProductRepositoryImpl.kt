@@ -20,7 +20,6 @@ class ProductRepositoryImpl(private val apiService: ApiService) : ProductReposit
     ): Resource<List<Product>> {
         return try {
             val response = apiService.search(query, limit, productType.title).addImageLinks()
-            Log.d("TAG", "search: $response")
             Resource.Success(response)
         } catch (e: Exception) {
             e.printStackTrace()

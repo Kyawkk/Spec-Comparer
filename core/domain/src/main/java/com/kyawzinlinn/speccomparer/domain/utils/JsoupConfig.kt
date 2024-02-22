@@ -27,7 +27,6 @@ object JsoupConfig {
     }
 
     private fun connect(path: String) : Document {
-        Log.d(TAG, "getProductSpecification: $WEB_URL$path")
         return Jsoup.connect(WEB_URL + path)
             .timeout(10000)
             .get()

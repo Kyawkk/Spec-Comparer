@@ -36,7 +36,6 @@ object CompareApi {
 
             cards.forEach {
                 val title = it.select("div.card-block>div.card-head>h2").text()
-                Log.d(TAG, "compareDevices: ${title.lowercase()}")
                 if (title.lowercase() == "key differences") {
                     keyDifferences = getKeyDifferences(it)
                 } else {

@@ -78,13 +78,13 @@ private fun ProductItemCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(Modifier.height(8.dp))
             Text(
                 text = displayCard.description,
-                fontSize = 12.sp,
+                fontSize = 13.sp,
                 letterSpacing = 0.1.sp,
                 lineHeight = 16.sp
             )

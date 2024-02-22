@@ -8,7 +8,6 @@ object ImageUrlBuilder {
     }
 
     fun buildFailedImageUrl(path: String): String {
-        Log.d("TAG", "ImageUrlS: ${path.lowercase().contains("samsung")}")
         return if (path.lowercase().contains("samsung")) {
             "${path.replace("mini.jpeg", "exynos-mini.jpeg")}"
         } else "$IMAGE_URL/phone/$path"

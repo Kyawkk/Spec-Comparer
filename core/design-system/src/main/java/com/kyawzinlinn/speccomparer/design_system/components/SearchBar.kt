@@ -51,7 +51,7 @@ fun SearchBar(
         modifier = modifier
             .fillMaxWidth()
             .onFocusChanged { onFocusChanged(it.isFocused) }
-            .border(border = BorderStroke(1.dp,Color.LightGray), shape = RoundedCornerShape(12.dp))
+            .border(border = BorderStroke(1.dp,MaterialTheme.colorScheme.onBackground.copy(0.3f)), shape = RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(6.dp)),
         placeholder = { Text("Search device...") },
         shape = RoundedCornerShape(10.dp),

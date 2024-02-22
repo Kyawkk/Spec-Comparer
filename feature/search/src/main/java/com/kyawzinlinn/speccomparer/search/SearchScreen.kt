@@ -113,9 +113,6 @@ fun SearchResultList(
     ) {
         items(searchResults) { product ->
             var isExynos by remember { mutableStateOf(false) }
-            LaunchedEffect(isExynos) {
-                Log.d("TAG", "isExynos: $isExynos")
-            }
 
             Card(
                 onClick = { onProductItemClick(product, isExynos) },

@@ -31,7 +31,6 @@ fun NetworkImage(
 
     LaunchedEffect(imageUrl) {
         url = if (imageUrl.contains("https")) imageUrl else "$IMG_PREFIX/$imageUrl"
-        Log.d(TAG, "NetworkImage: $imageUrl")
     }
 
     AsyncImage(

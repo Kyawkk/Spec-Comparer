@@ -103,8 +103,6 @@ private fun CompareDetailContent(
 ) {
     val scrollState = rememberLazyListState()
     var showStickyTitle by remember { mutableStateOf(false) }
-    val title = "${compareResponse.compareDeviceHeaderDetails.safe { it.firstDeviceName }} Vs ${compareResponse.compareDeviceHeaderDetails.safe { it.secondDeviceName }}"
-
     LaunchedEffect(scrollState.firstVisibleItemIndex) {
         withContext(Dispatchers.IO) {
             showStickyTitle = scrollState.firstVisibleItemIndex != 0
@@ -114,6 +112,7 @@ private fun CompareDetailContent(
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier,
         state = scrollState,
     ) {
         stickyHeader {
@@ -251,7 +250,7 @@ fun KeyDifferenceItem(
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = it, color = Color.DarkGray)
+                Text(text = it, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f))
             }
         }
     }
