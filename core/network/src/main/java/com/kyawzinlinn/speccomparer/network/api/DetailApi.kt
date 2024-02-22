@@ -1,7 +1,6 @@
 package com.kyawzinlinn.speccomparer.network.api
 
-import android.os.Build
-import android.os.StrictMode
+import android.util.Log
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.CompareResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.HeaderData
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.KeyDifference
@@ -14,24 +13,19 @@ import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationTable
 import com.kyawzinlinn.speccomparer.domain.utils.CssParser
 import com.kyawzinlinn.speccomparer.domain.utils.JsoupConfig
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
-import com.kyawzinlinn.speccomparer.domain.utils.Resource
 import com.kyawzinlinn.speccomparer.domain.utils.getAllChildren
-import com.kyawzinlinn.speccomparer.domain.utils.toParameter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.kyawzinlinn.speccomparer.domain.utils.toPath
 import org.jsoup.nodes.Element
 import java.util.Locale
 
 object DetailApi {
 
-    suspend fun getProductSpecification(
-        device: String,
+    fun getProductSpecification(
+        path: String,
         type: ProductType
     ): ProductSpecificationResponse {
-
         val document = JsoupConfig.connectProductDetailsWebUrl(
-            device.toParameter(),
+            path,
             type
         )
 
@@ -72,7 +66,7 @@ object DetailApi {
         type: ProductType
     ): CompareResponse {
         val document = JsoupConfig.connectCompareWebUrl(
-            "${firstDevice.toParameter()}-vs-${secondDevice.toParameter()}",
+            "${firstDevice.toPath()}-vs-${secondDevice.toPath()}",
             type
         )
         val cardElements = document.select("body>div.main-container>main>article>div.card")

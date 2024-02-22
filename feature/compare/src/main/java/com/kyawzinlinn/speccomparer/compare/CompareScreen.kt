@@ -2,9 +2,7 @@
 
 package com.kyawzinlinn.speccomparer.compare
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkOut
@@ -25,7 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
@@ -42,31 +39,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.kyawzinlinn.speccomparer.compare.components.CompareCard
 import com.kyawzinlinn.speccomparer.components.CompareScoreBar
 import com.kyawzinlinn.speccomparer.components.CompareScoreRow
-import com.kyawzinlinn.speccomparer.components.buildCompareTitle
 import com.kyawzinlinn.speccomparer.components.handleResponse
+import com.kyawzinlinn.speccomparer.design_system.components.NetworkImage
+import com.kyawzinlinn.speccomparer.design_system.theme.Inter
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareDetailResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareKeyDifferences
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScore
 import com.kyawzinlinn.speccomparer.domain.model.compare.KeyDifference
-import com.kyawzinlinn.speccomparer.domain.utils.ImageUrlBuilder
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.safe
 import kotlinx.coroutines.Dispatchers
@@ -88,30 +77,35 @@ fun CompareScreen(
 
     handleResponse(
         resource = compareResponse,
+        onSuccess = {
+            compareDetail = it
+        },
         onRetry = {
             compareViewModel.compare(firstDevice, secondDevice, productType)
         }
-    ) {
-        compareDetail = it
-    }
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        if (compareDetail != null) CompareDetailContent(compareDetail!!)
+        if (compareDetail != null) CompareDetailContent(
+            compareResponse = compareDetail!!,
+        )
     }
 }
 
 @Composable
 private fun CompareDetailContent(
-    compareResponse: CompareResponse, modifier: Modifier = Modifier
+    compareResponse: CompareResponse,
+    modifier: Modifier = Modifier
 ) {
     val scrollState = rememberLazyListState()
     var showStickyTitle by remember { mutableStateOf(false) }
+    val title = "${compareResponse.compareDeviceHeaderDetails.safe { it.firstDeviceName }} Vs ${compareResponse.compareDeviceHeaderDetails.safe { it.secondDeviceName }}"
 
-    LaunchedEffect (scrollState.firstVisibleItemIndex) {
+    LaunchedEffect(scrollState.firstVisibleItemIndex) {
         withContext(Dispatchers.IO) {
             showStickyTitle = scrollState.firstVisibleItemIndex != 0
         }
@@ -126,10 +120,14 @@ private fun CompareDetailContent(
             AnimatedVisibility(
                 visible = showStickyTitle,
                 enter = fadeIn() + slideInVertically { -it },
-                exit =  slideOutVertically { -it } + fadeOut() + shrinkOut(),
+                exit = slideOutVertically { -it } + fadeOut() + shrinkOut(),
                 modifier = Modifier.background(MaterialTheme.colorScheme.background)
             ) {
-                StickyTitleRow(firstDevice = compareResponse.compareDeviceHeaderDetails?.firstDeviceName ?: "", secondDevice = compareResponse.compareDeviceHeaderDetails?.secondDeviceName ?: "")
+                StickyTitleRow(
+                    firstDevice = compareResponse.compareDeviceHeaderDetails?.firstDeviceName ?: "",
+                    secondDevice = compareResponse.compareDeviceHeaderDetails?.secondDeviceName
+                        ?: ""
+                )
             }
         }
         item {
@@ -157,8 +155,11 @@ fun StickyTitleRow(
     secondDevice: String,
     modifier: Modifier = Modifier
 ) {
-    Column (modifier = modifier) {
-        Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)){
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Text(
                 text = firstDevice,
                 style = MaterialTheme.typography.titleMedium,
@@ -259,66 +260,58 @@ fun KeyDifferenceItem(
 @Composable
 private fun HeaderSection(
     compareHeaderDetails: CompareScore?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     val firstDevice = compareHeaderDetails.safe { it.firstDeviceName }
     val secondDevice = compareHeaderDetails.safe { it.secondDeviceName }
-    val firstScore = buildCompareTitle(title = compareHeaderDetails.safe { it.firstScore })
-    val secondScore = buildCompareTitle(title = compareHeaderDetails.safe { it.secondScore })
     CompareCard(
         title = "$firstDevice vs $secondDevice",
         expandable = false,
         modifier = modifier.fillMaxWidth()
     ) {
         Column {
-            Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Column(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                HeaderDeviceItem(
                     modifier = Modifier.weight(0.5f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    if (firstScore.trim().isNotEmpty())Text(text = firstScore)
-                    AsyncImage(
-                        model = ImageRequest
-                            .Builder(context)
-                            .data(ImageUrlBuilder.build(compareHeaderDetails.safe { it.firstImgUrl }))
-                            .error(com.google.android.material.R.drawable.ic_clock_black_24dp)
-                            .build(),
-                        modifier = Modifier.size(100.dp),
-                        contentDescription = null
-                    )
-                    Text(text = firstDevice, textAlign = TextAlign.Center)
-                }
+                    score = compareHeaderDetails.safe { it.firstScore },
+                    device = compareHeaderDetails.safe { it.firstDeviceName },
+                    imageUrl = compareHeaderDetails.safe { it.firstImgUrl },
+                    onRetry = { /*TODO*/ })
 
-                Column(
+                HeaderDeviceItem(
                     modifier = Modifier.weight(0.5f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    if (secondScore.trim().isNotEmpty())Text(text = secondScore)
-                    AsyncImage(
-                        model = ImageRequest
-                            .Builder(context)
-                            .data(ImageUrlBuilder.build(compareHeaderDetails.safe { it.secondImgUrl }))
-                            .error(com.google.android.material.R.drawable.ic_clock_black_24dp)
-                            .build(),
-                        modifier = Modifier.size(100.dp),
-                        contentDescription = null
-                    )
-                    Text(text = secondDevice, textAlign = TextAlign.Center)
-                }
+                    score = compareHeaderDetails.safe { it.secondScore },
+                    device = compareHeaderDetails.safe { it.secondDeviceName },
+                    imageUrl = compareHeaderDetails.safe { it.secondImgUrl },
+                    onRetry = { /*TODO*/ })
             }
         }
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun CompareScreenPreview() {
-    CompareScreen(
-        firstDevice = "First Device",
-        secondDevice = "Second Device",
-        productType = ProductType.Smartphone
-    )
+private fun HeaderDeviceItem(
+    score: String,
+    device: String,
+    imageUrl: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        if (score.trim().isNotEmpty()) Text(text = score)
+        NetworkImage(
+            imageUrl = imageUrl,
+            modifier = Modifier.size(100.dp),
+            onRetrySuccess = {},
+            onRetry = onRetry
+        )
+        Text(text = device, textAlign = TextAlign.Center)
+    }
 }

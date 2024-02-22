@@ -34,6 +34,7 @@ fun SearchBar(
     input : String,
     onValueChange: (String) -> Unit,
     onSearch: (String) -> Unit,
+    readOnly: Boolean,
     onFocusChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -46,6 +47,7 @@ fun SearchBar(
     TextField(
         value = value,
         maxLines = 1,
+        readOnly = readOnly,
         modifier = modifier
             .fillMaxWidth()
             .onFocusChanged { onFocusChanged(it.isFocused) }
@@ -71,10 +73,4 @@ fun SearchBar(
             onValueChange(value)
         }
     )
-}
-
-@Composable
-@Preview(showBackground = true, showSystemUi = true)
-fun SearchBarPreview() {
-    SearchBar("",{},{})
 }

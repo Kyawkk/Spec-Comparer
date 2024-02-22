@@ -1,9 +1,11 @@
 @file:OptIn(
-    ExperimentalFoundationApi::class, ExperimentalFoundationApi::class
+    ExperimentalFoundationApi::class, ExperimentalFoundationApi::class,
+    ExperimentalFoundationApi::class
 )
 
 package com.kyawzinlinn.speccomparer.search
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -29,22 +31,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.kyawzinlinn.speccomparer.components.handleResponse
 import com.kyawzinlinn.speccomparer.design_system.components.AutoCompleteSearchField
 import com.kyawzinlinn.speccomparer.design_system.components.LoadingScreen
+import com.kyawzinlinn.speccomparer.design_system.components.NetworkImage
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 
 @Composable
 fun SearchScreen(
     productType: ProductType,
-    onProductItemClick: (Product) -> Unit,
+    onProductItemClick: (Product, Boolean) -> Unit,
     searchViewModel: SearchViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
 ) {
@@ -102,19 +102,23 @@ fun SearchScreen(
 fun SearchResultList(
     searchResults: List<Product>,
     onRemoveErrorItem: (Product) -> Unit,
-    onProductItemClick: (Product) -> Unit,
+    onProductItemClick: (Product, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
-    val context = LocalContext.current
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(searchResults) { product ->
+            var isExynos by remember { mutableStateOf(false) }
+            LaunchedEffect(isExynos) {
+                Log.d("TAG", "isExynos: $isExynos")
+            }
+
             Card(
-                onClick = { onProductItemClick(product) },
+                onClick = { onProductItemClick(product, isExynos) },
                 modifier = Modifier.animateItemPlacement()
             ) {
                 Row(
@@ -129,12 +133,10 @@ fun SearchResultList(
                         )
                         .padding(16.dp), verticalAlignment = Alignment.CenterVertically
                 ) {
-                    AsyncImage(
-                        onError = { onRemoveErrorItem(product) },
-                        model = ImageRequest.Builder(context).data(product.imageUrl).crossfade(true)
-                            .build(),
-                        modifier = Modifier.weight(0.2f),
-                        contentDescription = null
+                    NetworkImage(
+                        imageUrl = product.imageUrl,
+                        onRetrySuccess = { isExynos = true },
+                        onErrorItemRemove = { onRemoveErrorItem(product) }
                     )
                     Text(
                         text = product.name,

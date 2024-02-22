@@ -29,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.kyawzinlinn.speccomparer.design_system.theme.Inter
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -114,6 +115,7 @@ private fun BottomSheetContent(
             defaultValue = firstDevice,
             suggestions = suggestions,
             onValueChange = onValueChange,
+            readOnly = true,
             onSearch = {
                 firstDeviceInput = it
             }
@@ -133,7 +135,7 @@ private fun BottomSheetContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            onClick = { onCompare(firstDeviceInput, secondDeviceInput) }) {
+            onClick = { onCompare ( firstDeviceInput, secondDeviceInput) }) {
             Text(text = "compare".uppercase())
         }
     }
@@ -145,6 +147,7 @@ fun SearchDeviceItem(
     title: String,
     defaultValue: String = "",
     suggestions: List<Product>,
+    readOnly: Boolean = false,
     onValueChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -162,6 +165,7 @@ fun SearchDeviceItem(
         AutoCompleteSearchField(
             defaultValue = defaultValue,
             suggestions = suggestions,
+            readOnly = readOnly,
             onValueChange = onValueChange,
             onSearch = onSearch
         )

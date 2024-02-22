@@ -10,8 +10,11 @@ import com.kyawzinlinn.speccomparer.network.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,6 +35,17 @@ class SearchViewModel @Inject constructor(
 
     private val _selectedQuery = MutableStateFlow("")
     val selectedQuery = _selectedQuery.asStateFlow()
+
+    /*private val _suggestions = MutableStateFlow(listOf<Product>())
+    val suggestions: StateFlow<List<Product>> = searchText
+        .combine(_suggestions) { query, suggestions ->
+            suggestions
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            _suggestions.value
+        )*/
 
     init {
         _suggestions.value = emptyList()

@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
-class SharedUiViewmodel @Inject constructor(): ViewModel() {
+class SharedUiViewmodel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(SharedUiState())
     val uiState: StateFlow<SharedUiState> = _uiState.asStateFlow()
 
@@ -25,11 +25,11 @@ class SharedUiViewmodel @Inject constructor(): ViewModel() {
         _uiState.update { it.copy(canNavigateBack = false) }
     }
 
-    fun showTrailingIcon(){
+    fun showTrailingIcon() {
         _uiState.update { it.copy(showTrailingIcon = true) }
     }
 
-    fun hideTrailingIcon(){
+    fun hideTrailingIcon() {
         _uiState.update { it.copy(showTrailingIcon = false) }
     }
 

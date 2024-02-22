@@ -42,6 +42,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:design-system"))
     hilt()
     moduleImplementation(":core:domain")
     compose()

@@ -2,14 +2,12 @@ package com.kyawzinlinn.speccomparer.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.kyawzinlinn.speccomparer.ProductViewModel
 import com.kyawzinlinn.speccomparer.R
 import com.kyawzinlinn.speccomparer.SharedUiViewmodel
 import com.kyawzinlinn.speccomparer.compare.CompareScreen
@@ -17,24 +15,45 @@ import com.kyawzinlinn.speccomparer.details.ProductDetailScreen
 import com.kyawzinlinn.speccomparer.domain.model.DisplayCard
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.getProductType
+import com.kyawzinlinn.speccomparer.domain.utils.safe
+import com.kyawzinlinn.speccomparer.domain.utils.toPath
 import com.kyawzinlinn.speccomparer.home.HomeScreen
 import com.kyawzinlinn.speccomparer.search.SearchScreen
 
 val displayCards = listOf(
-    DisplayCard(R.drawable.smartphone,"Smartphones","Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.", ProductType.Smartphone),
-    DisplayCard(R.drawable.smartphone_chip,"Smartphone Processors","Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.", ProductType.Soc),
-    DisplayCard(R.drawable.processor,"Laptop CPUs","Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.", ProductType.Cpu),
-    DisplayCard(R.drawable.laptop,"Laptops","Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.", ProductType.Laptop),
+    DisplayCard(
+        R.drawable.smartphone,
+        "Smartphones",
+        "Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.",
+        ProductType.Smartphone
+    ),
+    DisplayCard(
+        R.drawable.smartphone_chip,
+        "Smartphone Processors",
+        "Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.",
+        ProductType.Soc
+    ),
+    DisplayCard(
+        R.drawable.processor,
+        "Laptop CPUs",
+        "Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.",
+        ProductType.Cpu
+    ),
+    DisplayCard(
+        R.drawable.laptop,
+        "Laptops",
+        "Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.",
+        ProductType.Laptop
+    ),
 )
 
 @Composable
 fun NavigationGraph(
     sharedUiViewmodel: SharedUiViewmodel,
-    viewModel: ProductViewModel,
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val TAG = "NavigationGraph"
     val sharedUiState by sharedUiViewmodel.uiState.collectAsStateWithLifecycle()
 
     NavHost(
@@ -67,16 +86,19 @@ fun NavigationGraph(
 
             SearchScreen(
                 productType = type,
-                onProductItemClick = {
+                onProductItemClick = { product, isExynos ->
                     navController.navigate(
-                        "${ScreenRoute.Details.name}/${it.name}/${getProductType(it.content_type)}"
+                        "${ScreenRoute.Details.name}/${product.name}/${getProductType(product.content_type)}/${isExynos}"
                     )
                 })
         }
 
-        composable("${ScreenRoute.Details.name}/{product}/{productType}") {
+        composable("${ScreenRoute.Details.name}/{product}/{productType}/{isExynos}") {
             val product = it.arguments?.getString("product") ?: ""
+            val isExynos = it.arguments?.getString("isExynos")?.toBoolean() ?: false
             val productType = ProductType.valueOf(it.arguments?.getString("productType") ?: "")
+
+            val route = if (isExynos) "${product.toPath()}-exynos" else product.toPath()
 
             sharedUiViewmodel.apply {
                 updateTitle(product)
@@ -88,26 +110,24 @@ fun NavigationGraph(
             }
 
             ProductDetailScreen(
-                product = product,
+                product = route,
                 productType = productType,
-                uiState = uiState,
                 showBottomSheet = sharedUiState.showCompareBottomSheet,
                 onDismissBottomSheet = sharedUiViewmodel::hideCompareBottomSheet,
                 onCompare = { firstDevice, secondDevice ->
-                    viewModel.compareProducts(firstDevice, secondDevice, productType)
                     sharedUiViewmodel.hideCompareBottomSheet()
-                    navController.navigate("${ScreenRoute.Compare.name}/$firstDevice/$secondDevice/$productType")
+                    navController.navigate("${ScreenRoute.Compare.name}/$route/$secondDevice/$productType")
                 }
             )
         }
 
         composable("${ScreenRoute.Compare.name}/{firstDevice}/{secondDevice}/{productType}") {
-            val first = it.arguments?.getString("firstDevice") ?: ""
-            val second = it.arguments?.getString("secondDevice") ?: ""
+            val first = it.arguments?.getString("firstDevice").safe { it }
+            val second = it.arguments?.getString("secondDevice").safe { it }
             val productType = ProductType.valueOf(it.arguments?.getString("productType") ?: "")
 
             sharedUiViewmodel.apply {
-                updateTitle("$first Vs $second")
+                updateTitle("Comparison")
                 hideTrailingIcon()
             }
 

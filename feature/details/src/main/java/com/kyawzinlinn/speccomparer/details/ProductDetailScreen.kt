@@ -42,6 +42,7 @@ import com.kyawzinlinn.speccomparer.components.ExpandableCard
 import com.kyawzinlinn.speccomparer.components.handleResponse
 import com.kyawzinlinn.speccomparer.design_system.UiState
 import com.kyawzinlinn.speccomparer.design_system.components.CompareBottomSheet
+import com.kyawzinlinn.speccomparer.design_system.theme.Inter
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationItem
@@ -53,7 +54,6 @@ import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 fun ProductDetailScreen(
     product: String,
     productType: ProductType,
-    uiState: UiState,
     showBottomSheet: Boolean,
     onCompare: (String, String) -> Unit,
     onDismissBottomSheet: () -> Unit,
@@ -62,10 +62,8 @@ fun ProductDetailScreen(
 ) {
     val detailResponse by detailViewModel.detailResponse.collectAsStateWithLifecycle()
     val suggestions by detailViewModel.suggestions.collectAsStateWithLifecycle()
-    var compareUiState by remember { mutableStateOf(UiState()) }
     var productSpecification by remember { mutableStateOf<ProductSpecificationResponse?>(null) }
 
-    LaunchedEffect(uiState.compareDetails) { compareUiState = uiState }
     LaunchedEffect(Unit) { detailViewModel.resetSuggestions() }
 
     LaunchedEffect(Unit) { if(productSpecification == null) detailViewModel.getProductDetailSpecification(product, productType) }
@@ -198,15 +196,15 @@ private fun ProductDetailContent(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         productSpecificationResponse.productSpecification.productDetails.forEach {
-                            Row(modifier = Modifier.fillMaxWidth()) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Text(
                                     text = it.name, style = MaterialTheme.typography.titleSmall,
-                                    modifier = Modifier.weight(0.2f)
+                                    modifier = Modifier.weight(0.3f)
                                 )
                                 Text(
                                     text = "${it.value.replaceFirstChar { "" }}",
                                     style = MaterialTheme.typography.titleSmall,
-                                    modifier = Modifier.weight(0.8f)
+                                    modifier = Modifier.weight(0.7f)
                                 )
                             }
                         }

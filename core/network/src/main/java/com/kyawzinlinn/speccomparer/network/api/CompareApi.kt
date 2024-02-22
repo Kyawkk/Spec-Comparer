@@ -11,7 +11,7 @@ import com.kyawzinlinn.speccomparer.domain.model.compare.KeyDifference
 import com.kyawzinlinn.speccomparer.domain.utils.JsoupConfig
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.Resource
-import com.kyawzinlinn.speccomparer.domain.utils.toParameter
+import com.kyawzinlinn.speccomparer.domain.utils.toPath
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 object CompareApi {
@@ -24,7 +24,7 @@ object CompareApi {
 
         try {
             val document = JsoupConfig.connectCompareWebUrl(
-                "${firstDevice.toParameter()}-vs-${secondDevice.toParameter()}",
+                "${firstDevice}-vs-${secondDevice.toPath()}",
                 type
             )
 

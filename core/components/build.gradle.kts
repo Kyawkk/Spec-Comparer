@@ -39,6 +39,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:design-system"))
     moduleImplementation(":core:domain")
 
     implementation(libs.core.ktx)

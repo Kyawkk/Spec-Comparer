@@ -45,6 +45,7 @@ android {
 
 dependencies {
     compose()
+    coil()
     materialExtendedIcons()
 
     moduleImplementation(":core:domain")
