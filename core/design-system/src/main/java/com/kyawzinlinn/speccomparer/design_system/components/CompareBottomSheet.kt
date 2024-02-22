@@ -1,10 +1,12 @@
 @file:OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
 )
 
 package com.kyawzinlinn.speccomparer.design_system.components
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -28,8 +30,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.kyawzinlinn.speccomparer.design_system.theme.Inter
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -72,12 +74,10 @@ fun CompareBottomSheet(
             sheetState = sheetState
         ) {
             Column(
-                modifier = modifier
-                    .fillMaxWidth()
+                modifier = modifier.fillMaxWidth()
             ) {
                 BottomSheetContent(
-                    firstDevice = firstDevice,
-                    onCompare = { first, second ->
+                    firstDevice = firstDevice, onCompare = { first, second ->
                         scope.launch {
                             sheetState.hide()
                             delay(100)
@@ -85,9 +85,7 @@ fun CompareBottomSheet(
                                 onCompare(first, second)
                             }
                         }
-                    },
-                    suggestions = suggestions,
-                    onValueChange = onValueChange
+                    }, suggestions = suggestions, onValueChange = onValueChange
                 )
             }
         }
@@ -104,38 +102,39 @@ private fun BottomSheetContent(
 ) {
     var firstDeviceInput by remember { mutableStateOf(firstDevice) }
     var secondDeviceInput by remember { mutableStateOf("") }
+    var showErrorToast by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    LaunchedEffect(showErrorToast) {
+        if (showErrorToast) Toast.makeText(context, "Device names must not be empty!", Toast.LENGTH_SHORT).show()
+        showErrorToast = false
+    }
 
     LaunchedEffect(firstDevice) {
         firstDeviceInput = firstDevice
     }
 
     Column(modifier = modifier) {
-        SearchDeviceItem(
-            title = "First Device",
+        SearchDeviceItem(title = "First Device",
             defaultValue = firstDevice,
             suggestions = suggestions,
-            onValueChange = onValueChange,
-            readOnly = true,
-            onSearch = {
-                firstDeviceInput = it
-            }
-        )
+            readOnly = true)
         Spacer(modifier = Modifier.height(16.dp))
-        SearchDeviceItem(
-            title = "Second Device",
-            suggestions = suggestions,
-            onValueChange = onValueChange,
-            onSearch = {
-                secondDeviceInput = it
-            }
-        )
+        SearchDeviceItem(title = "Second Device", suggestions = suggestions, onValueChange = {
+            secondDeviceInput = it
+            onValueChange(it)
+        }, onSearch = {
+            secondDeviceInput = it
+        })
 
         Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            onClick = { onCompare ( firstDeviceInput, secondDeviceInput) }) {
+        Button(modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp), onClick = {
+            if (firstDeviceInput.trim().isNotEmpty() && secondDeviceInput.trim()
+                    .isNotEmpty()
+            ) onCompare(firstDeviceInput, secondDeviceInput) else showErrorToast = true
+        }) {
             Text(text = "compare".uppercase())
         }
     }
@@ -148,13 +147,12 @@ fun SearchDeviceItem(
     defaultValue: String = "",
     suggestions: List<Product>,
     readOnly: Boolean = false,
-    onValueChange: (String) -> Unit,
-    onSearch: (String) -> Unit,
+    onValueChange: (String) -> Unit = {},
+    onSearch: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Text(
             text = title,

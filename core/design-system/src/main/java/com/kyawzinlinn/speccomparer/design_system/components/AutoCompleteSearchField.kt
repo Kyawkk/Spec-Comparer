@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -73,9 +74,15 @@ fun AutoCompleteSearchField(
             onSearch = {
                 expanded = false
                 hasSearched = true
-                onSearch(it)
+                if (inputValue.trim().isNotEmpty()) onSearch(it)
             },
         )
+        AnimatedVisibility(visible = inputValue.trim().isEmpty() && hasSearched) {
+            Column {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = "Device name must not be empty!", color = MaterialTheme.colorScheme.onError)
+            }
+        }
         Spacer(modifier = Modifier.height(8.dp))
         AnimatedVisibility(visible = expanded && showSuggestions) {
             Card {
