@@ -1,4 +1,4 @@
-package com.kyawzinlinn.speccomparer.components
+package com.kyawzinlinn.speccomparer.design_system.components
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme

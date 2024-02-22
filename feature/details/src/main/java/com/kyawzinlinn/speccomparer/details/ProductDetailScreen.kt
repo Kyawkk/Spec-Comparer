@@ -38,11 +38,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.kyawzinlinn.speccomparer.components.ExpandableCard
-import com.kyawzinlinn.speccomparer.components.handleResponse
-import com.kyawzinlinn.speccomparer.design_system.UiState
+import com.kyawzinlinn.speccomparer.design_system.components.ExpandableCard
+import com.kyawzinlinn.speccomparer.design_system.components.handleResponse
 import com.kyawzinlinn.speccomparer.design_system.components.CompareBottomSheet
-import com.kyawzinlinn.speccomparer.design_system.theme.Inter
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationItem

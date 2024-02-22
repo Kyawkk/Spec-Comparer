@@ -42,12 +42,9 @@ android {
 }
 
 dependencies {
-
-    implementation(project(":core:components"))
     moduleImplementation(":core:domain")
     moduleImplementation(":core:design-system")
     moduleImplementation(":core:network")
-    moduleImplementation(":core:components")
 
     compose()
     coil()

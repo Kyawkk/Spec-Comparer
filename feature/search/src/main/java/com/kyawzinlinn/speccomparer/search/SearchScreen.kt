@@ -5,7 +5,6 @@
 
 package com.kyawzinlinn.speccomparer.search
 
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -34,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kyawzinlinn.speccomparer.components.handleResponse
+import com.kyawzinlinn.speccomparer.design_system.components.handleResponse
 import com.kyawzinlinn.speccomparer.design_system.components.AutoCompleteSearchField
 import com.kyawzinlinn.speccomparer.design_system.components.LoadingScreen
 import com.kyawzinlinn.speccomparer.design_system.components.NetworkImage

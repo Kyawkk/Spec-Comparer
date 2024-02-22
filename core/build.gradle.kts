@@ -33,7 +33,6 @@ android {
 }
 
 dependencies {
-    htmlUnitParser()
 
     implementation(libs.core.ktx)
     implementation(libs.appcompat)

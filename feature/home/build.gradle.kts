@@ -42,10 +42,12 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:design-system"))
     hilt()
-    moduleImplementation(":core:domain")
     compose()
+
+    moduleImplementation(":core:design-system")
+    moduleImplementation(":core:domain")
+
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)

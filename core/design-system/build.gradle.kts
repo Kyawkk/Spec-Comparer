@@ -49,6 +49,7 @@ dependencies {
     materialExtendedIcons()
 
     moduleImplementation(":core:domain")
+
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
     implementation(platform(libs.compose.bom))

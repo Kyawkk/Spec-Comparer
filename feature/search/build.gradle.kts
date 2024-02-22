@@ -45,7 +45,6 @@ dependencies {
     moduleImplementation(":core:domain")
     moduleImplementation(":core:design-system")
     moduleImplementation(":core:network")
-    moduleImplementation(":core:components")
 
     coil()
     hilt()

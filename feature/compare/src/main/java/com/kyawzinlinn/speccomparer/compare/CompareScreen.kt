@@ -45,12 +45,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kyawzinlinn.speccomparer.compare.components.CompareCard
-import com.kyawzinlinn.speccomparer.components.CompareScoreBar
-import com.kyawzinlinn.speccomparer.components.CompareScoreRow
-import com.kyawzinlinn.speccomparer.components.handleResponse
+import com.kyawzinlinn.speccomparer.design_system.components.CompareScoreBar
+import com.kyawzinlinn.speccomparer.design_system.components.CompareScoreRow
+import com.kyawzinlinn.speccomparer.design_system.components.ExpandableCard
 import com.kyawzinlinn.speccomparer.design_system.components.NetworkImage
-import com.kyawzinlinn.speccomparer.design_system.theme.Inter
+import com.kyawzinlinn.speccomparer.design_system.components.handleResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareDetailResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareKeyDifferences
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
@@ -203,10 +202,10 @@ private fun CompareSpecItem(
         expanded = hasExpanded
     }
 
-    CompareCard(
+    ExpandableCard(
         title = compareDetailResponse?.title ?: "",
         modifier = modifier,
-        onVisibleChanged = { expanded = it }) {
+        onExpandedChanged = { expanded = it }) {
         compareDetailResponse?.scoreBars?.forEach { compareScoreBar ->
             CompareScoreBar(
                 expanded = expanded,
@@ -227,7 +226,7 @@ private fun KeyDifferences(
     keyDifferences: CompareKeyDifferences?,
     modifier: Modifier = Modifier
 ) {
-    CompareCard(title = keyDifferences?.title ?: "", modifier = modifier) {
+    ExpandableCard(title = keyDifferences?.title ?: "", modifier = modifier) {
         KeyDifferenceItem(keyDifference = keyDifferences?.firstKeyDifference)
         Spacer(modifier = Modifier.height(16.dp))
         if (keyDifferences?.secondDifference?.title!!.isNotEmpty()) KeyDifferenceItem(keyDifference = keyDifferences?.secondDifference)
@@ -263,7 +262,7 @@ private fun HeaderSection(
 ) {
     val firstDevice = compareHeaderDetails.safe { it.firstDeviceName }
     val secondDevice = compareHeaderDetails.safe { it.secondDeviceName }
-    CompareCard(
+    ExpandableCard(
         title = "$firstDevice vs $secondDevice",
         expandable = false,
         modifier = modifier.fillMaxWidth()
