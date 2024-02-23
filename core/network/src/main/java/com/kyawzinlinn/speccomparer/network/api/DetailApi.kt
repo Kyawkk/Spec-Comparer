@@ -19,7 +19,7 @@ import org.jsoup.nodes.Element
 import java.util.Locale
 
 object DetailApi {
-
+    private const val TAG = "DetailApi"
     fun getProductSpecification(
         path: String,
         type: ProductType

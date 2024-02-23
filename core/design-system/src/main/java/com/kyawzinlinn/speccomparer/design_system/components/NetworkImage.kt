@@ -12,26 +12,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.utils.BASE_URL
 import com.kyawzinlinn.speccomparer.domain.utils.IMG_PREFIX
 import com.kyawzinlinn.speccomparer.domain.utils.ImageUrlBuilder
 
 @Composable
 fun NetworkImage(
+    product: Product = Product(),
     imageUrl: String,
     modifier: Modifier = Modifier,
     onErrorItemRemove: () -> Unit = {},
-    onRetrySuccess: () -> Unit,
+    onRetrySuccess: (Product) -> Unit,
     onRetry: () -> Unit = {},
 ) {
     val TAG = "NetworkImage"
-    var url by remember { mutableStateOf(imageUrl) }
+    var url by remember { mutableStateOf(product.imageUrl) }
+    var updatedProduct by remember { mutableStateOf(Product()) }
     var errorCount by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
-
-    LaunchedEffect(imageUrl) {
-        url = if (imageUrl.contains("https")) imageUrl else "$IMG_PREFIX/$imageUrl"
-    }
 
     AsyncImage(
         modifier = modifier,
@@ -43,11 +42,12 @@ fun NetworkImage(
             if (errorCount == 2) onErrorItemRemove()
             else {
                 onRetry()
-                url = ImageUrlBuilder.buildFailedImageUrl(imageUrl)
+                updatedProduct = ImageUrlBuilder.buildFailedImageUrl(product)
+                url = updatedProduct.imageUrl
                 errorCount++
             }
         },
-        onSuccess = { if (errorCount != 0) onRetrySuccess() },
+        onSuccess = { if (errorCount != 0) onRetrySuccess(updatedProduct) },
         contentDescription = null,
     )
 }

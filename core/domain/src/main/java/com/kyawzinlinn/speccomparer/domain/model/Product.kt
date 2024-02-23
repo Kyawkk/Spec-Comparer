@@ -7,6 +7,7 @@ import com.kyawzinlinn.speccomparer.domain.utils.toProductType
 data class Product(
     val content_type: String = "",
     val name: String = "",
+    val path: String = "",
     val imageUrl : String = "",
 )
 

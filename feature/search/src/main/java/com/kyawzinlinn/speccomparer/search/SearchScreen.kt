@@ -46,7 +46,6 @@ fun SearchScreen(
     searchViewModel: SearchViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
 ) {
-    val TAG = "SearchScreen"
 
     var searchResults by rememberSaveable { mutableStateOf(listOf<Product>()) }
     val searchResponse by searchViewModel.searchResultsResponse.collectAsStateWithLifecycle()
@@ -128,9 +127,10 @@ fun SearchResultList(
             isSearching = isSearching,
             hasSearched = hasSearched) { product ->
             var isExynos by remember { mutableStateOf(false) }
+            var updatedProduct by remember { mutableStateOf(product) }
 
             Card(
-                onClick = { onProductItemClick(product, isExynos) },
+                onClick = { onProductItemClick(updatedProduct, isExynos) },
                 modifier = Modifier.animateItemPlacement()
             ) {
                 Row(
@@ -146,12 +146,16 @@ fun SearchResultList(
                         .padding(16.dp), verticalAlignment = Alignment.CenterVertically
                 ) {
                     NetworkImage(
-                        imageUrl = product.imageUrl,
-                        onRetrySuccess = { isExynos = true },
+                        imageUrl = updatedProduct.imageUrl,
+                        product = updatedProduct,
+                        onRetrySuccess = {
+                            isExynos = true
+                            updatedProduct = it
+                        },
                         onErrorItemRemove = { onRemoveErrorItem(product) }
                     )
                     Text(
-                        text = product.name,
+                        text = updatedProduct.name,
                         modifier = Modifier.weight(0.8f),
                         style = MaterialTheme.typography.titleMedium
                     )

@@ -1,5 +1,6 @@
 package com.kyawzinlinn.speccomparer.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -87,18 +88,21 @@ fun NavigationGraph(
             SearchScreen(
                 productType = type,
                 onProductItemClick = { product, isExynos ->
+                    Log.d(TAG, "NavigationGraph: $product")
                     navController.navigate(
-                        "${ScreenRoute.Details.name}/${product.name}/${getProductType(product.content_type)}/${isExynos}"
+                        "${ScreenRoute.Details.name}/${product.name}/${getProductType(product.content_type)}/${product.path}"
                     )
                 })
         }
 
-        composable("${ScreenRoute.Details.name}/{product}/{productType}/{isExynos}") {
+        composable("${ScreenRoute.Details.name}/{product}/{productType}/{path}") {
             val product = it.arguments?.getString("product") ?: ""
-            val isExynos = it.arguments?.getString("isExynos")?.toBoolean() ?: false
+            val path = it.arguments?.getString("path") ?: ""
             val productType = ProductType.valueOf(it.arguments?.getString("productType") ?: "")
 
-            val route = if (isExynos) "${product.toPath()}-exynos" else product.toPath()
+            //val route = if (path) "${product.toPath()}-exynos" else product.toPath()
+
+            Log.d(TAG, "NavigationGraph: $path")
 
             sharedUiViewmodel.apply {
                 updateTitle(product)
@@ -110,7 +114,7 @@ fun NavigationGraph(
             }
 
             ProductDetailScreen(
-                product = route,
+                product = path,
                 productType = productType,
                 showBottomSheet = sharedUiState.showCompareBottomSheet,
                 onDismissBottomSheet = sharedUiViewmodel::hideCompareBottomSheet,

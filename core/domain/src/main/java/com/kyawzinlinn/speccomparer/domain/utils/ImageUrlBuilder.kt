@@ -1,16 +1,39 @@
 package com.kyawzinlinn.speccomparer.domain.utils
 
 import android.util.Log
+import com.kyawzinlinn.speccomparer.domain.model.Product
 
 object ImageUrlBuilder {
+    private const val TAG = "ImageUrlBuilder"
     fun build(path: String): String {
         return IMG_PREFIX + path
     }
 
-    fun buildFailedImageUrl(path: String): String {
-        return if (path.lowercase().contains("samsung")) {
-            "${path.replace("mini.jpeg", "exynos-mini.jpeg")}"
-        } else "$IMAGE_URL/phone/$path"
+    fun buildFailedImageUrl(product: Product): Product {
+        val imgUrl = product.imageUrl
+        var updatedImgUrl = imgUrl
+        var updatedPath = product.path
+        Log.d(TAG, "buildFailedImageUrl: ${product.name.toPath()}-exynos")
+        when (true) {
+            imgUrl.lowercase().contains("samsung") -> {
+                updatedImgUrl = imgUrl.replace("mini.jpeg", "exynos-mini.jpeg").isValidUrl()
+                updatedPath = "${product.name.toPath()}-exynos"
+            }
+            imgUrl.lowercase().contains("realme") -> {
+                updatedImgUrl = imgUrl.replace("realme","oppo-realme").isValidUrl()
+                updatedPath = "oppo-${product.name.toPath()}"
+            }
+            else -> {
+                updatedImgUrl = "$IMAGE_URL/${product.content_type}/$imgUrl".isValidUrl()
+            }
+        }
+
+        return product.copy(imageUrl = updatedImgUrl, path = updatedPath)
+    }
+
+    private fun String.isValidUrl(): String {
+        return if (this.contains("https")) this
+        else "$IMG_PREFIX/$this"
     }
 
     fun buildSingleImage(productType: ProductType, path: String): String {
