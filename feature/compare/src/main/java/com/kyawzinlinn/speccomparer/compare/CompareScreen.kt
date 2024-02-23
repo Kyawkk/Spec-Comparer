@@ -55,6 +55,7 @@ import com.kyawzinlinn.speccomparer.domain.model.compare.CompareKeyDifferences
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScore
 import com.kyawzinlinn.speccomparer.domain.model.compare.KeyDifference
+import com.kyawzinlinn.speccomparer.domain.utils.IMG_PREFIX
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.safe
 import kotlinx.coroutines.Dispatchers
@@ -305,10 +306,11 @@ private fun HeaderDeviceItem(
     ) {
         if (score.trim().isNotEmpty()) Text(text = score)
         NetworkImage(
-            imageUrl = imageUrl,
+            imageUrl = "$IMG_PREFIX$imageUrl",
             modifier = Modifier.size(100.dp),
             onRetrySuccess = {},
-            onRetry = onRetry
+            onRetry = onRetry,
+            onErrorItemRemove = {}
         )
         Text(text = device, textAlign = TextAlign.Center)
     }

@@ -1,5 +1,6 @@
 package com.kyawzinlinn.speccomparer.design_system.extensions
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
@@ -18,6 +19,7 @@ fun <T> LazyListScope.products(
     contentType: (item: T) -> Any? = { null },
     itemContent: @Composable LazyItemScope.(item: T) -> Unit
 ) = run {
+    Log.d("TAG", "products: ${items.size}")
     if (!hasSearched && items.isEmpty()) item {
         Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = "Search anything...")
@@ -29,7 +31,8 @@ fun <T> LazyListScope.products(
         }
     }
     else {
-        items(count = items.size,
+        items(
+            count = items.size,
             key = if (key != null) { index: Int -> key(items[index]) } else null,
             contentType = { index: Int -> contentType(items[index]) }) {
             itemContent(items[it])

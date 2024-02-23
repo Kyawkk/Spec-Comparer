@@ -1,10 +1,11 @@
 @file:OptIn(
     ExperimentalFoundationApi::class, ExperimentalFoundationApi::class,
-    ExperimentalFoundationApi::class
+    ExperimentalFoundationApi::class, ExperimentalFoundationApi::class
 )
 
 package com.kyawzinlinn.speccomparer.search
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,7 +27,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,15 +43,15 @@ import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 @Composable
 fun SearchScreen(
     productType: ProductType,
-    onProductItemClick: (Product, Boolean) -> Unit,
+    onProductItemClick: (Product) -> Unit,
     searchViewModel: SearchViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
 ) {
 
-    var searchResults by rememberSaveable { mutableStateOf(listOf<Product>()) }
     val searchResponse by searchViewModel.searchResultsResponse.collectAsStateWithLifecycle()
     val suggestions by searchViewModel.suggestions.collectAsStateWithLifecycle()
     val selectedQuery by searchViewModel.selectedQuery.collectAsStateWithLifecycle()
+    val searchResults by searchViewModel.searchResults.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
     var hasSearched by remember { mutableStateOf(false) }
     var isSearching by remember { mutableStateOf(false) }
@@ -62,12 +63,13 @@ fun SearchScreen(
     handleResponse(
         resource = searchResponse,
         onRetry = { searchViewModel.search(searchQuery, productType) },
-        onError = { isSearching = false },
-        onLoading = { isSearching = true }
-    ) {
-        isSearching = false
-        searchResults = it
-    }
+        onError = {
+            isSearching = false
+            hasSearched = false
+                  },
+        onLoading = { isSearching = true },
+        onSuccess = { isSearching = false }
+    )
 
     Column(
         modifier = modifier.fillMaxSize()
@@ -80,7 +82,6 @@ fun SearchScreen(
                 searchQuery = it
                 hasSearched = true
                 // clear old search results when user search new product
-                searchResults = emptyList()
                 searchViewModel.search(it, productType)
             },
             onValueChange = {
@@ -92,11 +93,7 @@ fun SearchScreen(
 
         SearchResultList(
             searchResults = searchResults,
-            onRemoveErrorItem = {
-                val temp = searchResults.toMutableList()
-                temp.remove(it)
-                searchResults = temp
-            },
+            onRemoveErrorItem = searchViewModel::removeErrorItem,
             searchQuery = searchQuery,
             hasSearched = hasSearched,
             isSearching = isSearching,
@@ -112,10 +109,12 @@ fun SearchResultList(
     isSearching: Boolean,
     searchResults: List<Product>,
     onRemoveErrorItem: (Product) -> Unit,
-    onProductItemClick: (Product, Boolean) -> Unit,
+    onProductItemClick: (Product) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
+    LaunchedEffect(searchResults) {
+        Log.d("TAG", "SearchResultList: ${searchResults.map { it.name }}")
+    }
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(16.dp),
@@ -125,12 +124,12 @@ fun SearchResultList(
             items = searchResults,
             query = searchQuery,
             isSearching = isSearching,
-            hasSearched = hasSearched) { product ->
-            var isExynos by remember { mutableStateOf(false) }
+            hasSearched = hasSearched
+        ) { product ->
             var updatedProduct by remember { mutableStateOf(product) }
 
             Card(
-                onClick = { onProductItemClick(updatedProduct, isExynos) },
+                onClick = { onProductItemClick(updatedProduct) },
                 modifier = Modifier.animateItemPlacement()
             ) {
                 Row(
@@ -149,10 +148,12 @@ fun SearchResultList(
                         imageUrl = updatedProduct.imageUrl,
                         product = updatedProduct,
                         onRetrySuccess = {
-                            isExynos = true
                             updatedProduct = it
                         },
-                        onErrorItemRemove = { onRemoveErrorItem(product) }
+                        onErrorItemRemove = {
+                            Log.d("TAG", "SearchResultList: onErrorItemRemove")
+                            onRemoveErrorItem(product)
+                        }
                     )
                     Text(
                         text = updatedProduct.name,

@@ -87,7 +87,7 @@ fun NavigationGraph(
 
             SearchScreen(
                 productType = type,
-                onProductItemClick = { product, isExynos ->
+                onProductItemClick = { product ->
                     Log.d(TAG, "NavigationGraph: $product")
                     navController.navigate(
                         "${ScreenRoute.Details.name}/${product.name}/${getProductType(product.content_type)}/${product.path}"
@@ -120,7 +120,7 @@ fun NavigationGraph(
                 onDismissBottomSheet = sharedUiViewmodel::hideCompareBottomSheet,
                 onCompare = { firstDevice, secondDevice ->
                     sharedUiViewmodel.hideCompareBottomSheet()
-                    navController.navigate("${ScreenRoute.Compare.name}/$route/$secondDevice/$productType")
+                    navController.navigate("${ScreenRoute.Compare.name}/$path/$secondDevice/$productType")
                 }
             )
         }

@@ -20,9 +20,9 @@ import com.kyawzinlinn.speccomparer.domain.utils.ImageUrlBuilder
 @Composable
 fun NetworkImage(
     product: Product = Product(),
-    imageUrl: String,
+    imageUrl: String = "",
     modifier: Modifier = Modifier,
-    onErrorItemRemove: () -> Unit = {},
+    onErrorItemRemove: () -> Unit,
     onRetrySuccess: (Product) -> Unit,
     onRetry: () -> Unit = {},
 ) {
@@ -32,6 +32,15 @@ fun NetworkImage(
     var errorCount by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
 
+    LaunchedEffect(imageUrl) {
+        Log.d(TAG, "ImageUrl: $imageUrl")
+        if (imageUrl.isNotEmpty()) url = imageUrl
+    }
+
+    LaunchedEffect(errorCount){
+        if (errorCount == 2) onErrorItemRemove()
+    }
+
     AsyncImage(
         modifier = modifier,
         model = ImageRequest.Builder(context)
@@ -39,8 +48,7 @@ fun NetworkImage(
             .crossfade(true)
             .build(),
         onError = {
-            if (errorCount == 2) onErrorItemRemove()
-            else {
+            if (errorCount != 2) {
                 onRetry()
                 updatedProduct = ImageUrlBuilder.buildFailedImageUrl(product)
                 url = updatedProduct.imageUrl

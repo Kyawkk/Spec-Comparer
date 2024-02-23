@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,34 +37,37 @@ class SearchViewModel @Inject constructor(
     private val _selectedQuery = MutableStateFlow("")
     val selectedQuery = _selectedQuery.asStateFlow()
 
-    /*private val _suggestions = MutableStateFlow(listOf<Product>())
-    val suggestions: StateFlow<List<Product>> = searchText
-        .combine(_suggestions) { query, suggestions ->
-            suggestions
-        }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            _suggestions.value
-        )*/
+    private val _searchResults = MutableStateFlow(emptyList<Product>())
+    val searchResults: StateFlow<List<Product>> = _searchResults.asStateFlow()
 
     init {
         _suggestions.value = emptyList()
         _searchResultsResponse.value = Resource.Default
-
     }
 
     private fun updateSelectedQuery(selectedQuery: String) {
         _selectedQuery.value = selectedQuery
     }
 
+    fun removeErrorItem(product: Product) {
+        Log.d(TAG, "removeErrorItem: ${_searchResults.value.map { it.name }}")
+        _searchResults.update { it - product }
+        Log.d(TAG, "removeErrorItem: ${_searchResults.value.map { it.name }}")
+    }
+
     fun search (productName: String, productType: ProductType) {
         viewModelScope.launch {
+            _searchResults.update { emptyList() }
             _suggestions.value = emptyList()
             updateSelectedQuery(productName)
             _searchResultsResponse.value = Resource.Loading
             delay(500)
             _searchResultsResponse.value = productRepository.search(productName,500,productType)
+
+            when (searchResultsResponse.value) {
+                is Resource.Success -> _searchResults.value = (searchResultsResponse.value as Resource.Success<List<Product>>).data
+                else -> {}
+            }
         }
     }
 

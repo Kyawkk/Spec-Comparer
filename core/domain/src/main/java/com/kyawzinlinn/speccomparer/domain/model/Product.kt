@@ -14,7 +14,6 @@ data class Product(
 fun List<Product>.addImageLinks() : List<Product> {
     return map {
         val imageUrl = ImageUrlBuilder.buildSingleImage(it.content_type.toProductType() , it.name.toPath())
-        println("imageUrl: $imageUrl")
-        it.copy(imageUrl = imageUrl)
+        it.copy(imageUrl = imageUrl, path = it.name.toPath())
     }
 }

@@ -22,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyawzinlinn.speccomparer.design_system.R
+import com.kyawzinlinn.speccomparer.design_system.extensions.dividerColor
 import com.kyawzinlinn.speccomparer.domain.utils.NetworkError
 
 @Composable
@@ -53,7 +54,7 @@ fun NetworkErrorScreen(
                 text = message.message,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp),
-                color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                color = MaterialTheme.colorScheme.dividerColor
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = onRetry) {

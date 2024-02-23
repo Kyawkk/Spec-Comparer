@@ -41,7 +41,8 @@ fun Elements.getAllChildren(): List<String>{
 
 fun String.toPath(): String{
     return if (this.contains(" ")) this.lowercase(Locale.getDefault())
-        .replace(Regex("[^a-z0-9\\s]"), "")
+        .replace(Regex("[^a-z0-9\\s-]"), "")
+        .replace("\"","")
         .replace(" ", "-") else this
 }
 

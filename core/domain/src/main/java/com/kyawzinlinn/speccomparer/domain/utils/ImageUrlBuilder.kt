@@ -13,7 +13,7 @@ object ImageUrlBuilder {
         val imgUrl = product.imageUrl
         var updatedImgUrl = imgUrl
         var updatedPath = product.path
-        Log.d(TAG, "buildFailedImageUrl: ${product.name.toPath()}-exynos")
+
         when (true) {
             imgUrl.lowercase().contains("samsung") -> {
                 updatedImgUrl = imgUrl.replace("mini.jpeg", "exynos-mini.jpeg").isValidUrl()
@@ -23,8 +23,15 @@ object ImageUrlBuilder {
                 updatedImgUrl = imgUrl.replace("realme","oppo-realme").isValidUrl()
                 updatedPath = "oppo-${product.name.toPath()}"
             }
+
+            imgUrl.lowercase().contains("honor") -> {
+                updatedImgUrl = imgUrl.replace("honor","huawei-honor").isValidUrl()
+                updatedPath = "huawei-${product.name.toPath()}"
+            }
+
             else -> {
                 updatedImgUrl = "$IMAGE_URL/${product.content_type}/$imgUrl".isValidUrl()
+                updatedPath = product.name.toPath()
             }
         }
 

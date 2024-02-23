@@ -5,6 +5,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -30,6 +31,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kyawzinlinn.speccomparer.design_system.extensions.dividerColor
 
 @Composable
 fun ExpandableCard(
@@ -42,7 +44,7 @@ fun ExpandableCard(
     var expanded by remember { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
         targetValue = if (expanded) 180f else 360f,
-        animationSpec = tween(durationMillis = 400,easing = FastOutLinearInEasing)
+        animationSpec = tween(durationMillis = 400,easing = FastOutLinearInEasing), label = ""
     )
 
     LaunchedEffect (expandable) {
@@ -74,7 +76,7 @@ fun ExpandableCard(
             }
             AnimatedVisibility(visible = expanded) {
                 Column {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = MaterialTheme.colorScheme.dividerColor)
                     content()
                 }
             }
