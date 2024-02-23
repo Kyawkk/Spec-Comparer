@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,10 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kyawzinlinn.speccomparer.design_system.components.handleResponse
 import com.kyawzinlinn.speccomparer.design_system.components.AutoCompleteSearchField
-import com.kyawzinlinn.speccomparer.design_system.components.LoadingScreen
 import com.kyawzinlinn.speccomparer.design_system.components.NetworkImage
+import com.kyawzinlinn.speccomparer.design_system.components.handleResponse
+import com.kyawzinlinn.speccomparer.design_system.extensions.products
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 
@@ -52,9 +51,10 @@ fun SearchScreen(
     var searchResults by rememberSaveable { mutableStateOf(listOf<Product>()) }
     val searchResponse by searchViewModel.searchResultsResponse.collectAsStateWithLifecycle()
     val suggestions by searchViewModel.suggestions.collectAsStateWithLifecycle()
-    var showLoading by remember { mutableStateOf(false) }
     val selectedQuery by searchViewModel.selectedQuery.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
+    var hasSearched by remember { mutableStateOf(false) }
+    var isSearching by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         searchViewModel.clearSuggestions()
@@ -62,8 +62,11 @@ fun SearchScreen(
 
     handleResponse(
         resource = searchResponse,
-        onRetry = { searchViewModel.search(searchQuery, productType) }
+        onRetry = { searchViewModel.search(searchQuery, productType) },
+        onError = { isSearching = false },
+        onLoading = { isSearching = true }
     ) {
+        isSearching = false
         searchResults = it
     }
 
@@ -76,29 +79,38 @@ fun SearchScreen(
             defaultValue = selectedQuery,
             onSearch = {
                 searchQuery = it
-
+                hasSearched = true
                 // clear old search results when user search new product
                 searchResults = emptyList()
                 searchViewModel.search(it, productType)
             },
-            onValueChange = { searchViewModel.getSuggestions(it, productType) })
+            onValueChange = {
+                hasSearched = it.isNotEmpty()
+                isSearching = true
+                searchViewModel.getSuggestions(it, productType)
+            }
+        )
 
-        if (showLoading) LoadingScreen()
-        else {
-            SearchResultList(
-                searchResults = searchResults,
-                onRemoveErrorItem = {
-                    val temp = searchResults.toMutableList()
-                    temp.remove(it)
-                    searchResults = temp
-                }, onProductItemClick = onProductItemClick
-            )
-        }
+        SearchResultList(
+            searchResults = searchResults,
+            onRemoveErrorItem = {
+                val temp = searchResults.toMutableList()
+                temp.remove(it)
+                searchResults = temp
+            },
+            searchQuery = searchQuery,
+            hasSearched = hasSearched,
+            isSearching = isSearching,
+            onProductItemClick = onProductItemClick
+        )
     }
 }
 
 @Composable
 fun SearchResultList(
+    searchQuery: String,
+    hasSearched: Boolean,
+    isSearching: Boolean,
     searchResults: List<Product>,
     onRemoveErrorItem: (Product) -> Unit,
     onProductItemClick: (Product, Boolean) -> Unit,
@@ -110,7 +122,11 @@ fun SearchResultList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(searchResults) { product ->
+        products(
+            items = searchResults,
+            query = searchQuery,
+            isSearching = isSearching,
+            hasSearched = hasSearched) { product ->
             var isExynos by remember { mutableStateOf(false) }
 
             Card(

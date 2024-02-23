@@ -19,6 +19,8 @@ import com.kyawzinlinn.speccomparer.domain.utils.Resource
 fun <T> handleResponse(
     resource: Resource<T>,
     onRetry: () -> Unit,
+    onError: () -> Unit = {},
+    onLoading: () -> Unit = {},
     onSuccess: (T) -> Unit
 ) {
     var showLoading by remember { mutableStateOf(false) }
@@ -29,7 +31,10 @@ fun <T> handleResponse(
 
     LaunchedEffect(resource) {
         when (resource) {
-            is Resource.Loading -> showLoading = true
+            is Resource.Loading -> {
+                onLoading()
+                showLoading = true
+            }
             is Resource.Success -> {
                 showLoading = false
                 showError = false
@@ -38,6 +43,7 @@ fun <T> handleResponse(
             }
 
             is Resource.Error -> {
+                onError()
                 attemptCount++
                 showLoading = false
                 showError = true

@@ -53,7 +53,7 @@ fun NetworkErrorScreen(
                 text = message.message,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp),
-                color = Color.Black.copy(0.5f)
+                color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = onRetry) {
