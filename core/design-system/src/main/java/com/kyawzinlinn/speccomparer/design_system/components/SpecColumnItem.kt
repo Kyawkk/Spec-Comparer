@@ -19,7 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
+import com.kyawzinlinn.speccomparer.domain.model.detail.SpecificationColumn
 
 @Composable
 fun SpecColumnItem(

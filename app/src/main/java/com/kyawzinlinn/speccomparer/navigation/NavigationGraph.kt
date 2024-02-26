@@ -1,6 +1,5 @@
 package com.kyawzinlinn.speccomparer.navigation
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,8 +12,8 @@ import com.kyawzinlinn.speccomparer.SharedUiViewmodel
 import com.kyawzinlinn.speccomparer.compare.CompareScreen
 import com.kyawzinlinn.speccomparer.details.ProductDetailScreen
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
-import com.kyawzinlinn.speccomparer.domain.utils.getProductType
 import com.kyawzinlinn.speccomparer.domain.utils.safe
+import com.kyawzinlinn.speccomparer.domain.utils.toProductType
 import com.kyawzinlinn.speccomparer.home.HomeScreen
 import com.kyawzinlinn.speccomparer.search.SearchScreen
 
@@ -58,7 +57,7 @@ fun NavigationGraph(
                 productType = type,
                 onProductItemClick = { product ->
                     navController.navigate(
-                        "${ScreenRoute.Details.name}/${product.name}/${getProductType(product.content_type)}/${product.path}"
+                        "${ScreenRoute.Details.name}/${product.name}/${product.content_type.toProductType()}/${product.path}"
                     )
                 })
         }

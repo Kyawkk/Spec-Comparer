@@ -1,10 +1,9 @@
 package com.kyawzinlinn.speccomparer.network.repository
 
-import android.util.Log
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.model.addImageLinks
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
+import com.kyawzinlinn.speccomparer.domain.model.detail.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.Resource
 import com.kyawzinlinn.speccomparer.network.api.ApiService

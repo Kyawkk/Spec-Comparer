@@ -71,16 +71,17 @@ class SearchViewModel @Inject constructor(
             _searchResultsResponse.value = Resource.Loading
             delay(500)
             _searchResultsResponse.value = productRepository.search(productName,500,productType)
-
+            Log.d(TAG, "search: $productName $productType")
             when (searchResultsResponse.value) {
                 is Resource.Loading -> updateSearchResultState(SearchResultState.Loading)
                 is Resource.Success -> {
                     val data = (searchResultsResponse.value as Resource.Success<List<Product>>).data
                     _searchResults.value = data
-
+                    Log.d(TAG, "search: $data")
                     if (data.isEmpty()) updateSearchResultState(SearchResultState.Empty) else updateSearchResultState(SearchResultState.Success)
                 }
                 is Resource.Error -> {
+                    Log.d(TAG, "search: error")
                     updateSearchResultState(SearchResultState.Error)
                 }
                 else -> {updateSearchResultState(SearchResultState.Default)}

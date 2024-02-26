@@ -135,7 +135,6 @@ object CompareApi {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        println("scoreList: $scoreBarList")
         return scoreBarList
     }
 
@@ -188,29 +187,6 @@ object CompareApi {
         } catch (e: Exception) {
             e.printStackTrace()
             return null
-        }
-    }
-}
-
-fun main() {
-    val state = CompareApi.compareDevices(
-        "Acer Extensa 15",
-        "acer Aspire 3 Spin 14",
-        ProductType.Laptop
-    )
-
-    when (state) {
-        is Resource.Loading -> {
-            println("Loading...")
-        }
-        is Resource.Success -> {
-            println(state.data)
-        }
-        is Resource.Error -> {
-            //println(state.message)
-        }
-        else -> {
-            println("else")
         }
     }
 }

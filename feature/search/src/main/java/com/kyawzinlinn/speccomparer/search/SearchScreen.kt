@@ -57,7 +57,6 @@ fun SearchScreen(
     var searchQuery by remember { mutableStateOf("") }
     var hasSearched by remember { mutableStateOf(false) }
     var isSearching by remember { mutableStateOf(false) }
-    var isError by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         searchViewModel.clearSuggestions()

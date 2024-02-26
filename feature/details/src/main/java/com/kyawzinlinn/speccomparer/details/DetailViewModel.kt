@@ -1,10 +1,9 @@
 package com.kyawzinlinn.speccomparer.details
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kyawzinlinn.speccomparer.domain.model.Product
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
+import com.kyawzinlinn.speccomparer.domain.model.detail.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.Resource
 import com.kyawzinlinn.speccomparer.network.repository.ProductRepository
@@ -13,7 +12,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,9 +19,7 @@ import javax.inject.Inject
 class DetailViewModel @Inject constructor(
     private val repository: ProductRepository
 ): ViewModel() {
-    companion object {
-        const val TAG = "DetailViewModel"
-    }
+
     private val _detailResponse = MutableStateFlow<Resource<ProductSpecificationResponse>> (Resource.Default)
     val detailResponse: StateFlow<Resource<ProductSpecificationResponse>> = _detailResponse.asStateFlow()
 

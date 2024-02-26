@@ -1,15 +1,13 @@
 package com.kyawzinlinn.speccomparer.data
 
-import com.kyawzinlinn.speccomparer.domain.model.DisplayCard
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareDetailResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareKeyDifferences
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScore
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScoreBar
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareScoreRow
 import com.kyawzinlinn.speccomparer.domain.model.compare.KeyDifference
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.CompareResponse
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.HeaderData
-import com.kyawzinlinn.speccomparer.domain.utils.ProductType
+import com.kyawzinlinn.speccomparer.domain.model.detail.CompareResponse
+import com.kyawzinlinn.speccomparer.domain.model.detail.HeaderData
 
 object DataSource {
     val defaultCompareResponse = CompareResponse(

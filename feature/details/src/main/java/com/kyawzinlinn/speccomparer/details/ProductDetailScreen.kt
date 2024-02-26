@@ -44,10 +44,10 @@ import com.kyawzinlinn.speccomparer.design_system.components.CompareBottomSheet
 import com.kyawzinlinn.speccomparer.design_system.components.ExpandableCard
 import com.kyawzinlinn.speccomparer.design_system.components.HandleResponse
 import com.kyawzinlinn.speccomparer.design_system.extensions.dividerColor
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationItem
-import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationTable
+import com.kyawzinlinn.speccomparer.domain.model.detail.ProductSpecificationResponse
+import com.kyawzinlinn.speccomparer.domain.model.detail.SpecificationColumn
+import com.kyawzinlinn.speccomparer.domain.model.detail.SpecificationItem
+import com.kyawzinlinn.speccomparer.domain.model.detail.SpecificationTable
 import com.kyawzinlinn.speccomparer.domain.utils.ImageUrlBuilder
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 
@@ -119,7 +119,7 @@ fun SpecItemList(specificationItem: SpecificationItem, modifier: Modifier = Modi
 }
 
 @Composable
-fun SpecTableItem(specificationTable: SpecificationTable, modifier: Modifier = Modifier) {
+private fun SpecTableItem(specificationTable: SpecificationTable, modifier: Modifier = Modifier) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(modifier = Modifier.height(8.dp))
         Row(
@@ -145,7 +145,7 @@ fun SpecTableItem(specificationTable: SpecificationTable, modifier: Modifier = M
 }
 
 @Composable
-fun SpecColumnItem(
+private fun SpecColumnItem(
     expanded: Boolean,
     specificationColumn: SpecificationColumn,
     modifier: Modifier = Modifier

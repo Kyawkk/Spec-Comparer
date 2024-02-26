@@ -158,7 +158,7 @@ private fun BottomSheetContent(
 }
 
 @Composable
-fun SearchDeviceItem(
+private fun SearchDeviceItem(
     title: String,
     defaultValue: String = "",
     suggestions: List<Product>,

@@ -13,7 +13,8 @@ import java.net.SocketTimeoutException
 import javax.net.ssl.SSLHandshakeException
 
 object ExceptionHandler {
-    inline fun <T> handleError(exception: Exception): Resource<T> {
+    fun <T> handleError(exception: Exception): Resource<T> {
+        exception.printStackTrace()
         return when (exception) {
             is JSONException -> Resource.Error(NetworkError(title = "JSON Parsing Error", message = "Error parsing response"))
             is HttpException -> Resource.Error(NetworkError(title = "HTTP Exception", message = exception.message.toString()))
@@ -25,7 +26,7 @@ object ExceptionHandler {
             is IllegalArgumentException -> Resource.Error(NetworkError(title = "Invalid Argument", message="Thrown when invalid arguments are passed to Jsoup methods, such as null URLs or invalid CSS selectors"))
             is ParseException -> Resource.Error(NetworkError(title = "Parsing Error", message="Occurs when Jsoup encounters HTML or XML it cannot parse due to syntax errors or invalid markup"))
             is SSLHandshakeException -> Resource.Error(NetworkError(title = "SSL Handshake Error", message="Indicates a problem with the SSL handshake process when attempting to connect to a website over HTTPS"))
-            else -> Resource.Error(NetworkError(title = "", message = "Unknown error occurred"))
+            else -> Resource.Error(NetworkError(title = "", message = "${exception.cause}"))
         }
     }
 }

@@ -33,7 +33,6 @@ fun NetworkImage(
     val context = LocalContext.current
 
     LaunchedEffect(imageUrl) {
-        Log.d(TAG, "ImageUrl: $imageUrl")
         if (imageUrl.isNotEmpty()) url = imageUrl
     }
 

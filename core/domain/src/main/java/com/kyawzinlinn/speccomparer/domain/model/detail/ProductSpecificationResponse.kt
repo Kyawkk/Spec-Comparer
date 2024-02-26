@@ -1,4 +1,4 @@
-package com.kyawzinlinn.speccomparer.domain.model.smartphone
+package com.kyawzinlinn.speccomparer.domain.model.detail
 
 data class ProductSpecificationResponse(
     val productSpecification: ProductSpecification = ProductSpecification(),

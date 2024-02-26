@@ -25,8 +25,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true // false
-            isShrinkResources = true  // not included
+            //isMinifyEnabled = true // false
+            //isShrinkResources = true  // not included
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -51,21 +51,19 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
 }
 
 dependencies {
-
-    retrofit()
     compose()
     hilt()
-    coil()
-    jsoup()
-    htmlUnitParser()
     materialExtendedIcons()
 
     allFeatureModules()
-    moduleImplementation(":core:network")
-    moduleImplementation(":core:data")
     moduleImplementation(":core:domain")
     moduleImplementation(":core:design-system")
 

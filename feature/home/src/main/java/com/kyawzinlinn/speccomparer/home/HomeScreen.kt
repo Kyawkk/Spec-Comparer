@@ -5,19 +5,12 @@ package com.kyawzinlinn.speccomparer.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowColumn
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -96,16 +89,12 @@ private fun ProductItemCard(
     onCardClick: (ProductType, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val density = LocalDensity.current
-    var desiredItemMinHeight by remember {
-        mutableStateOf(0.dp)
-    }
 
     val context = LocalContext.current
     val title = context.resources.getString(displayCard.title)
     Card(
         modifier = modifier,
-        onClick = { onCardClick(displayCard.type,title) }
+        onClick = { onCardClick(displayCard.type, title) }
     ) {
         Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.Start) {
             Icon(painter = painterResource(displayCard.icon), contentDescription = null)

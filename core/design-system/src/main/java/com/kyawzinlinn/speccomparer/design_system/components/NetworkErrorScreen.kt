@@ -63,9 +63,3 @@ fun NetworkErrorScreen(
         }
     }
 }
-
-@Preview (showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun NetworkErrorScreenPreview() {
-    NetworkErrorScreen(onRetry = {}, attemptCount = 0, message = NetworkError("Network error!","No internet connection. Please check your mobile data or  wifi."))
-}

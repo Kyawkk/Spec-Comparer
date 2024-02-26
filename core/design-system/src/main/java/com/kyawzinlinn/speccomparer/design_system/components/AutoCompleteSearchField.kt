@@ -99,7 +99,7 @@ fun AutoCompleteSearchField(
 }
 
 @Composable
-fun SuggestionDropdown(
+private fun SuggestionDropdown(
     visible: Boolean,
     suggestions: List<Product>,
     onItemClick: (String) -> Unit
