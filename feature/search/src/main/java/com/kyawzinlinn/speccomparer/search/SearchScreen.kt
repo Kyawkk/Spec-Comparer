@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,9 +33,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyawzinlinn.speccomparer.design_system.components.AutoCompleteSearchField
+import com.kyawzinlinn.speccomparer.design_system.components.HandleResponse
 import com.kyawzinlinn.speccomparer.design_system.components.NetworkImage
-import com.kyawzinlinn.speccomparer.design_system.components.handleResponse
 import com.kyawzinlinn.speccomparer.design_system.extensions.products
+import com.kyawzinlinn.speccomparer.design_system.states.SearchResultState
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 
@@ -52,23 +52,28 @@ fun SearchScreen(
     val suggestions by searchViewModel.suggestions.collectAsStateWithLifecycle()
     val selectedQuery by searchViewModel.selectedQuery.collectAsStateWithLifecycle()
     val searchResults by searchViewModel.searchResults.collectAsStateWithLifecycle()
+    val searchResultState by searchViewModel.searchResultState.collectAsStateWithLifecycle()
+
     var searchQuery by remember { mutableStateOf("") }
     var hasSearched by remember { mutableStateOf(false) }
     var isSearching by remember { mutableStateOf(false) }
+    var isError by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         searchViewModel.clearSuggestions()
     }
 
-    handleResponse(
+    HandleResponse(
         resource = searchResponse,
-        onRetry = { searchViewModel.search(searchQuery, productType) },
-        onError = {
-            isSearching = false
-            hasSearched = false
-                  },
-        onLoading = { isSearching = true },
-        onSuccess = { isSearching = false }
+        onRetry = {
+            searchViewModel.apply {
+                search(searchQuery, productType)
+                updateSearchResultState(SearchResultState.Nothing)
+            }
+        },
+        onError = {},
+        onLoading = {},
+        onSuccess = {}
     )
 
     Column(
@@ -81,7 +86,6 @@ fun SearchScreen(
             onSearch = {
                 searchQuery = it
                 hasSearched = true
-                // clear old search results when user search new product
                 searchViewModel.search(it, productType)
             },
             onValueChange = {
@@ -95,9 +99,8 @@ fun SearchScreen(
             searchResults = searchResults,
             onRemoveErrorItem = searchViewModel::removeErrorItem,
             searchQuery = searchQuery,
-            hasSearched = hasSearched,
-            isSearching = isSearching,
-            onProductItemClick = onProductItemClick
+            searchResultState = searchResultState,
+            onProductItemClick = onProductItemClick,
         )
     }
 }
@@ -105,16 +108,13 @@ fun SearchScreen(
 @Composable
 fun SearchResultList(
     searchQuery: String,
-    hasSearched: Boolean,
-    isSearching: Boolean,
+    searchResultState: SearchResultState,
     searchResults: List<Product>,
     onRemoveErrorItem: (Product) -> Unit,
     onProductItemClick: (Product) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LaunchedEffect(searchResults) {
-        Log.d("TAG", "SearchResultList: ${searchResults.map { it.name }}")
-    }
+
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(16.dp),
@@ -122,9 +122,8 @@ fun SearchResultList(
     ) {
         products(
             items = searchResults,
+            searchResultState = searchResultState,
             query = searchQuery,
-            isSearching = isSearching,
-            hasSearched = hasSearched
         ) { product ->
             var updatedProduct by remember { mutableStateOf(product) }
 

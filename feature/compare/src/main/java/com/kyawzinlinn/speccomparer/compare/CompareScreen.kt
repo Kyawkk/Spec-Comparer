@@ -48,8 +48,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyawzinlinn.speccomparer.design_system.components.CompareScoreBar
 import com.kyawzinlinn.speccomparer.design_system.components.CompareScoreRow
 import com.kyawzinlinn.speccomparer.design_system.components.ExpandableCard
+import com.kyawzinlinn.speccomparer.design_system.components.HandleResponse
 import com.kyawzinlinn.speccomparer.design_system.components.NetworkImage
-import com.kyawzinlinn.speccomparer.design_system.components.handleResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareDetailResponse
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareKeyDifferences
 import com.kyawzinlinn.speccomparer.domain.model.compare.CompareResponse
@@ -75,7 +75,7 @@ fun CompareScreen(
         compareViewModel.compare(firstDevice, secondDevice, productType)
     }
 
-    handleResponse(
+    HandleResponse(
         resource = compareResponse,
         onSuccess = {
             compareDetail = it

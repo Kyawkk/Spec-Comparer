@@ -16,7 +16,7 @@ import com.kyawzinlinn.speccomparer.domain.utils.Resource
 
 
 @Composable
-fun <T> handleResponse(
+fun <T> HandleResponse(
     resource: Resource<T>,
     onRetry: () -> Unit,
     onError: () -> Unit = {},

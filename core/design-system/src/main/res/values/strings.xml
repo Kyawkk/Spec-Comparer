@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smartphone">Smartphones</string>
+    <string name="soc">SoC (System-on-Chip)</string>
+    <string name="laptops">Laptops</string>
+    <string name="laptop_cpus">Laptop CPUs</string>
+    <string name="smartphone_description">Compare the latest smartphones in terms of performance, camera quality, battery life, and design. Find the perfect balance between cutting-edge features and affordability.</string>
+    <string name="soc_description">Dive into the heart of technology with our System-on-Chip comparisons. Discover which processors power your devices, unleashing performance benchmarks, efficiency metrics, and gaming capabilities.</string>
+    <string name="laptop_description">Explore the world of laptops, from sleek ultrabooks to powerful gaming rigs. Compare specifications such as CPU, GPU, RAM, storage, and display quality to find the ideal balance between portability and performance.</string>
+    <string name="cpus_description">Delve into the brains of laptops with our CPU comparisons. Uncover the powerhouses behind your devices, analyzing factors like core count, clock speed, cache size, and thermal efficiency.</string>
+</resources>

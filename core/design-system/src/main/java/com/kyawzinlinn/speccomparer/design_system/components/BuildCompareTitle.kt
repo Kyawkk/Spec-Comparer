@@ -30,12 +30,3 @@ fun buildCompareTitle (title: String): AnnotatedString {
         buildAnnotatedString { title }
     }
 }
-
-@Preview (showBackground = true)
-@Composable
-private fun CompareTitlePreview() {
-    Text(
-        modifier = Modifier.padding(8.dp),
-        text = buildCompareTitle(title = "50 out of 100")
-    )
-}

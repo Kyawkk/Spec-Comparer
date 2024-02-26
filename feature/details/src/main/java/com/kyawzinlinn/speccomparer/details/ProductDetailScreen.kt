@@ -30,17 +30,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.kyawzinlinn.speccomparer.design_system.components.ExpandableCard
-import com.kyawzinlinn.speccomparer.design_system.components.handleResponse
 import com.kyawzinlinn.speccomparer.design_system.components.CompareBottomSheet
+import com.kyawzinlinn.speccomparer.design_system.components.ExpandableCard
+import com.kyawzinlinn.speccomparer.design_system.components.HandleResponse
 import com.kyawzinlinn.speccomparer.design_system.extensions.dividerColor
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.ProductSpecificationResponse
 import com.kyawzinlinn.speccomparer.domain.model.smartphone.SpecificationColumn
@@ -54,7 +56,7 @@ fun ProductDetailScreen(
     product: String,
     productType: ProductType,
     showBottomSheet: Boolean,
-    onCompare: (String, String) -> Unit,
+    onCompare: (String) -> Unit,
     onDismissBottomSheet: () -> Unit,
     modifier: Modifier = Modifier,
     detailViewModel: DetailViewModel = hiltViewModel()
@@ -65,14 +67,18 @@ fun ProductDetailScreen(
 
     LaunchedEffect(Unit) { detailViewModel.resetSuggestions() }
 
-    LaunchedEffect(Unit) { if(productSpecification == null) detailViewModel.getProductDetailSpecification(product, productType) }
-
-    if (productSpecification == null) {
-        handleResponse(resource = detailResponse,
-            onRetry = { detailViewModel.getProductDetailSpecification(product, productType) }) {
-            productSpecification = it
-        }
+    LaunchedEffect(Unit) {
+        if (productSpecification == null) detailViewModel.getProductDetailSpecification(
+            product,
+            productType
+        )
     }
+
+    HandleResponse(
+        resource = detailResponse,
+        onRetry = { detailViewModel.getProductDetailSpecification(product, productType) },
+        onSuccess = { productSpecification = it }
+    )
 
     CompareBottomSheet(
         suggestions = suggestions,
@@ -92,6 +98,7 @@ fun ProductDetailScreen(
 @Composable
 fun SpecItemList(specificationItem: SpecificationItem, modifier: Modifier = Modifier) {
     var expanded by rememberSaveable { mutableStateOf(false) }
+
     ExpandableCard(
         title = specificationItem.title,
         modifier = modifier,
@@ -102,7 +109,9 @@ fun SpecItemList(specificationItem: SpecificationItem, modifier: Modifier = Modi
         specificationItem.specificationsColumn.forEach {
             SpecColumnItem(expanded = expanded, specificationColumn = it)
         }
+
         Spacer(modifier = Modifier.height(8.dp))
+
         specificationItem.specificationsTable.forEach {
             SpecTableItem(it)
         }
@@ -113,12 +122,21 @@ fun SpecItemList(specificationItem: SpecificationItem, modifier: Modifier = Modi
 fun SpecTableItem(specificationTable: SpecificationTable, modifier: Modifier = Modifier) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(modifier = Modifier.height(8.dp))
-        Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = specificationTable.title, style = MaterialTheme.typography.titleMedium
+                text = specificationTable.title,
+                modifier = Modifier.weight(0.5f),
+                textAlign = TextAlign.Start,
+                style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = specificationTable.value
+                text = specificationTable.value,
+                textAlign = TextAlign.End,
+                modifier = Modifier.weight(0.5f),
             )
         }
         Spacer(Modifier.height(8.dp))
@@ -143,6 +161,7 @@ fun SpecColumnItem(
         animationSpec = tween(1000),
         label = ""
     )
+
     Column(modifier = modifier) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
@@ -195,13 +214,16 @@ private fun ProductDetailContent(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         productSpecificationResponse.productSpecification.productDetails.forEach {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
                                 Text(
                                     text = it.name, style = MaterialTheme.typography.titleSmall,
                                     modifier = Modifier.weight(0.3f)
                                 )
                                 Text(
-                                    text = "${it.value.replaceFirstChar { "" }}",
+                                    text = it.value.replaceFirstChar { "" },
                                     style = MaterialTheme.typography.titleSmall,
                                     modifier = Modifier.weight(0.7f)
                                 )
@@ -213,7 +235,7 @@ private fun ProductDetailContent(
         }
 
         items(productSpecificationResponse.productSpecifications) { specification ->
-            key (specification.title) {
+            key(specification.title) {
                 SpecItemList(specification, modifier = Modifier.animateItemPlacement())
             }
         }

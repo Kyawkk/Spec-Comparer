@@ -30,7 +30,6 @@ class MainActivity : ComponentActivity() {
             val sharedUiViewmodel: SharedUiViewmodel = hiltViewModel()
             val navController = rememberNavController()
             val uiState by sharedUiViewmodel.uiState.collectAsStateWithLifecycle()
-            val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
             SpecComparerTheme {
                 Scaffold(

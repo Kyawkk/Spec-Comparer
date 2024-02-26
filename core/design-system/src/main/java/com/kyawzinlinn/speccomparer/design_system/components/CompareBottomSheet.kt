@@ -43,7 +43,7 @@ fun CompareBottomSheet(
     firstDevice: String,
     showBottomSheet: Boolean,
     onValueChange: (String) -> Unit,
-    onCompare: (String, String) -> Unit,
+    onCompare: (String) -> Unit,
     onDismissBottomSheet: () -> Unit,
     modifier: Modifier = Modifier,
     suggestions: List<Product>
@@ -77,15 +77,18 @@ fun CompareBottomSheet(
                 modifier = modifier.fillMaxWidth()
             ) {
                 BottomSheetContent(
-                    firstDevice = firstDevice, onCompare = { first, second ->
+                    firstDevice = firstDevice,
+                    onCompare = { second ->
                         scope.launch {
                             sheetState.hide()
                             delay(100)
                             withContext(Dispatchers.Main) {
-                                onCompare(first, second)
+                                onCompare(second)
                             }
                         }
-                    }, suggestions = suggestions, onValueChange = onValueChange
+                    },
+                    suggestions = suggestions,
+                    onValueChange = onValueChange
                 )
             }
         }
@@ -97,7 +100,7 @@ private fun BottomSheetContent(
     suggestions: List<Product>,
     firstDevice: String,
     onValueChange: (String) -> Unit,
-    onCompare: (String, String) -> Unit,
+    onCompare: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var firstDeviceInput by remember { mutableStateOf(firstDevice) }
@@ -106,7 +109,11 @@ private fun BottomSheetContent(
     val context = LocalContext.current
 
     LaunchedEffect(showErrorToast) {
-        if (showErrorToast) Toast.makeText(context, "Device names must not be empty!", Toast.LENGTH_SHORT).show()
+        if (showErrorToast) Toast.makeText(
+            context,
+            "Device names must not be empty!",
+            Toast.LENGTH_SHORT
+        ).show()
         showErrorToast = false
     }
 
@@ -115,25 +122,34 @@ private fun BottomSheetContent(
     }
 
     Column(modifier = modifier) {
-        SearchDeviceItem(title = "First Device",
+        SearchDeviceItem(
+            title = "First Device",
             defaultValue = firstDevice,
             suggestions = suggestions,
-            readOnly = true)
+            readOnly = true
+        )
+
         Spacer(modifier = Modifier.height(16.dp))
-        SearchDeviceItem(title = "Second Device", suggestions = suggestions, onValueChange = {
-            secondDeviceInput = it
-            onValueChange(it)
-        }, onSearch = {
-            secondDeviceInput = it
-        })
+
+        SearchDeviceItem(
+            title = "Second Device",
+            suggestions = suggestions,
+            onValueChange = {
+                secondDeviceInput = it
+                onValueChange(it)
+            },
+            onSearch = {
+                secondDeviceInput = it
+            }
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp), onClick = {
-            if (firstDeviceInput.trim().isNotEmpty() && secondDeviceInput.trim()
+            if (secondDeviceInput.trim()
                     .isNotEmpty()
-            ) onCompare(firstDeviceInput, secondDeviceInput) else showErrorToast = true
+            ) onCompare(secondDeviceInput) else showErrorToast = true
         }) {
             Text(text = "compare".uppercase())
         }

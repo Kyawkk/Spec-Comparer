@@ -3,6 +3,7 @@ package com.kyawzinlinn.speccomparer.search
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kyawzinlinn.speccomparer.design_system.states.SearchResultState
 import com.kyawzinlinn.speccomparer.domain.model.Product
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.Resource
@@ -40,9 +41,16 @@ class SearchViewModel @Inject constructor(
     private val _searchResults = MutableStateFlow(emptyList<Product>())
     val searchResults: StateFlow<List<Product>> = _searchResults.asStateFlow()
 
+    private val _searchResultState = MutableStateFlow<SearchResultState>(SearchResultState.Default)
+    val searchResultState: StateFlow<SearchResultState> = _searchResultState.asStateFlow()
+
     init {
         _suggestions.value = emptyList()
         _searchResultsResponse.value = Resource.Default
+    }
+
+    fun updateSearchResultState(state: SearchResultState) {
+        _searchResultState.value = state
     }
 
     private fun updateSelectedQuery(selectedQuery: String) {
@@ -65,8 +73,17 @@ class SearchViewModel @Inject constructor(
             _searchResultsResponse.value = productRepository.search(productName,500,productType)
 
             when (searchResultsResponse.value) {
-                is Resource.Success -> _searchResults.value = (searchResultsResponse.value as Resource.Success<List<Product>>).data
-                else -> {}
+                is Resource.Loading -> updateSearchResultState(SearchResultState.Loading)
+                is Resource.Success -> {
+                    val data = (searchResultsResponse.value as Resource.Success<List<Product>>).data
+                    _searchResults.value = data
+
+                    if (data.isEmpty()) updateSearchResultState(SearchResultState.Empty) else updateSearchResultState(SearchResultState.Success)
+                }
+                is Resource.Error -> {
+                    updateSearchResultState(SearchResultState.Error)
+                }
+                else -> {updateSearchResultState(SearchResultState.Default)}
             }
         }
     }

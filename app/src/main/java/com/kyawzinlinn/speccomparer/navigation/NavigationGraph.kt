@@ -9,44 +9,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.kyawzinlinn.speccomparer.R
 import com.kyawzinlinn.speccomparer.SharedUiViewmodel
 import com.kyawzinlinn.speccomparer.compare.CompareScreen
 import com.kyawzinlinn.speccomparer.details.ProductDetailScreen
-import com.kyawzinlinn.speccomparer.domain.model.DisplayCard
 import com.kyawzinlinn.speccomparer.domain.utils.ProductType
 import com.kyawzinlinn.speccomparer.domain.utils.getProductType
 import com.kyawzinlinn.speccomparer.domain.utils.safe
-import com.kyawzinlinn.speccomparer.domain.utils.toPath
 import com.kyawzinlinn.speccomparer.home.HomeScreen
 import com.kyawzinlinn.speccomparer.search.SearchScreen
-
-val displayCards = listOf(
-    DisplayCard(
-        R.drawable.smartphone,
-        "Smartphones",
-        "Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.",
-        ProductType.Smartphone
-    ),
-    DisplayCard(
-        R.drawable.smartphone_chip,
-        "Smartphone Processors",
-        "Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.",
-        ProductType.Soc
-    ),
-    DisplayCard(
-        R.drawable.processor,
-        "Laptop CPUs",
-        "Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.",
-        ProductType.Cpu
-    ),
-    DisplayCard(
-        R.drawable.laptop,
-        "Laptops",
-        "Make an in-depth comparison of various phones to see which is better in terms of camera quality, performance, battery life, and value for money.",
-        ProductType.Laptop
-    ),
-)
 
 @Composable
 fun NavigationGraph(
@@ -54,7 +24,6 @@ fun NavigationGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val TAG = "NavigationGraph"
     val sharedUiState by sharedUiViewmodel.uiState.collectAsStateWithLifecycle()
 
     NavHost(
@@ -68,11 +37,11 @@ fun NavigationGraph(
                 disableNavigateBack()
             }
             HomeScreen(
-                displayCards = displayCards,
                 onNavigateSearch = { type, title ->
                     val data = type.name
                     navController.navigate("${ScreenRoute.Search.name}/$data/$title")
-                })
+                }
+            )
         }
 
         composable("${ScreenRoute.Search.name}/{data}/{title}") {
@@ -88,7 +57,6 @@ fun NavigationGraph(
             SearchScreen(
                 productType = type,
                 onProductItemClick = { product ->
-                    Log.d(TAG, "NavigationGraph: $product")
                     navController.navigate(
                         "${ScreenRoute.Details.name}/${product.name}/${getProductType(product.content_type)}/${product.path}"
                     )
@@ -100,15 +68,12 @@ fun NavigationGraph(
             val path = it.arguments?.getString("path") ?: ""
             val productType = ProductType.valueOf(it.arguments?.getString("productType") ?: "")
 
-            //val route = if (path) "${product.toPath()}-exynos" else product.toPath()
-
-            Log.d(TAG, "NavigationGraph: $path")
-
             sharedUiViewmodel.apply {
                 updateTitle(product)
                 enableNavigateBack()
                 showTrailingIcon()
             }
+
             LaunchedEffect(Unit) {
                 sharedUiViewmodel.hideCompareBottomSheet()
             }
@@ -118,7 +83,7 @@ fun NavigationGraph(
                 productType = productType,
                 showBottomSheet = sharedUiState.showCompareBottomSheet,
                 onDismissBottomSheet = sharedUiViewmodel::hideCompareBottomSheet,
-                onCompare = { firstDevice, secondDevice ->
+                onCompare = { secondDevice ->
                     sharedUiViewmodel.hideCompareBottomSheet()
                     navController.navigate("${ScreenRoute.Compare.name}/$path/$secondDevice/$productType")
                 }
@@ -126,6 +91,7 @@ fun NavigationGraph(
         }
 
         composable("${ScreenRoute.Compare.name}/{firstDevice}/{secondDevice}/{productType}") {
+
             val first = it.arguments?.getString("firstDevice").safe { it }
             val second = it.arguments?.getString("secondDevice").safe { it }
             val productType = ProductType.valueOf(it.arguments?.getString("productType") ?: "")
