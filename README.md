@@ -14,13 +14,13 @@ An app that compares mobile specifications, cpu, SoC and laptops using web scrap
 - [Installation](#installation)
 
 ## Features
-**Device Comparison:** Compare detailed specifications of phones, SoCs, laptops, and laptop CPUs.
-**User-friendly Interface:** Built with Jetpack Compose for a modern and reactive UI.
-**Modular Design:** Utilizes multimodules to maintain a clean and organized project structure.
-**Dependency Injection:** Incorporates Dagger Hilt for efficient and easy dependency injection.
-**Clean Architecture:** Follows the principles of Clean Architecture to achieve separation of concerns.
-**MVVM Pattern:** Implements the Model-View-ViewModel pattern for a robust and maintainable architecture.
-**Web Scraping:** Utilizes JSoup for web scraping to fetch and update device details.
+- **Device Comparison:** Compare detailed specifications of phones, SoCs, laptops, and laptop CPUs.
+- **User-friendly Interface:** Built with Jetpack Compose for a modern and reactive UI.
+- **Modular Design:** Utilizes multimodules to maintain a clean and organized project structure.
+- **Dependency Injection:** Incorporates Dagger Hilt for efficient and easy dependency injection.
+- **Clean Architecture:** Follows the principles of Clean Architecture to achieve separation of concerns.
+- **MVVM Pattern:** Implements the Model-View-ViewModel pattern for a robust and maintainable architecture.
+- **Web Scraping:** Utilizes JSoup for web scraping to fetch and update device details.
 
 ## Screenshots
 
