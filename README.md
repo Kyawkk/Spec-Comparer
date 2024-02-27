@@ -11,6 +11,7 @@ An app that compares mobile specifications, cpu, SoC and laptops using web scrap
 - [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Dependencies](#dependencies)
+- [Download](#download)
 
 ## Features
 - **Device Comparison:** Compare detailed specifications of phones, SoCs, laptops, and laptop CPUs.
