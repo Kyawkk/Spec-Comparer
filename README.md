@@ -16,7 +16,7 @@ An app that compares mobile specifications, cpu, SoC and laptops using web scrap
 
 ## Screenshots
 
-| Home Screen                                                                             | Details Screen                                                                            | Search Screen                                                                                 |
+| Home Screen                                                                             | Search Screen                                                                             | Phone Details Screen                                                                          |
 |-----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
 | ![one](https://raw.githubusercontent.com/Kyawkk/Spec-Comparer/master/screenshots/one.png) | ![two](https://raw.githubusercontent.com/Kyawkk/Spec-Comparer/master/screenshots/two.png) | ![three](https://raw.githubusercontent.com/Kyawkk/Spec-Comparer/master/screenshots/three.png) |
 
