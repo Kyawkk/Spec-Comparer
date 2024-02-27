@@ -2,6 +2,7 @@
 
 package com.kyawzinlinn.speccomparer.details
 
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -91,6 +92,9 @@ fun ProductDetailScreen(
 
     Column(modifier = modifier.fillMaxSize()) {
         if (productSpecification != null) ProductDetailContent(productSpecificationResponse = productSpecification!!)
+        else Column (modifier = Modifier.fillMaxSize()) {
+
+        }
     }
 }
 
