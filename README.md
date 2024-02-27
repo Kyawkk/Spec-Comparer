@@ -36,7 +36,7 @@ An app that compares mobile specifications, cpu, SoC and laptops using web scrap
 1. Clone the repository.
 ```bash
 # Clone the repository
-git clone https://github.com/Kyawkk/SMS_Sender.git 
+git clone https://github.com/Kyawkk/Spec-Comparer.git 
 ```
 
 2.Open the project in Android Studio.
