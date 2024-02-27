@@ -37,6 +37,12 @@ An app that compares mobile specifications, cpu, SoC and laptops using web scrap
 ```bash
 # Clone the repository
 git clone https://github.com/Kyawkk/SMS_Sender.git 
+```
 
 2.Open the project in Android Studio.
 3.Build and run the app.
+
+## Dependencies
+- **Jetpack Compose:** Modern Android UI toolkit.
+- **Dagger Hilt:** Dependency injection library.
+- **JSoup:** Java library for working with real-world HTML.
