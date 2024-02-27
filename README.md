@@ -12,3 +12,14 @@ An app that compares mobile specifications, cpu, SoC and laptops using web scrap
 - [Architecture](#architecture)
 - [Technologies Used](#technologies-used)
 - [Installation](#installation)
+
+
+## Screenshots
+
+| Home Screen                                                                             | Add Message Screen                                                                           | Reply Screen                                                                            |
+|-----------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| ![one](https://raw.githubusercontent.com/Kyawkk/Spec_Comparer/master/screenshoots/one.png) | ![two](https://raw.githubusercontent.com/Kyawkk/Spec_Comparer/master/screenshoots/add_message_screen.png)  | ![three](https://raw.githubusercontent.com/Kyawkk/Spec_Comparer/master/screenshoots/reply_screen.png) |
+
+| Add Reply Screen                                                                            | Update Reply Screen                                                                                | Reply Messages Screen                                                                         |
+|-----------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| ![four](https://raw.githubusercontent.com/Kyawkk/Spec_Comparer/master/screenshoots/add_reply_screen.png) | ![five](https://raw.githubusercontent.com/Kyawkk/Spec_Comparer/master/screenshoots/update_reply_screen.png) | ![six](https://raw.githubusercontent.com/Kyawkk/Spec_Comparer/master/screenshoots/reply_message_screen.png)
