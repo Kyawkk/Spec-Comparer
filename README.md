@@ -42,6 +42,9 @@ git clone https://github.com/Kyawkk/Spec-Comparer.git
 2.Open the project in Android Studio.
 3.Build and run the app.
 
+## Download
+[Download APK](https://github.com/Kyawkk/Spec-Comparer/releases/download/v1.0.0/app-release.apk) - Click here to download the latest version of the APK file.
+
 ## Dependencies
 - **Jetpack Compose:** Modern Android UI toolkit.
 - **Dagger Hilt:** Dependency injection library.
