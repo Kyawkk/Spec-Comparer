@@ -9,9 +9,8 @@ An app that compares mobile specifications, cpu, SoC and laptops using web scrap
 
 - [Features](#features)
 - [Screenshots](#screenshots)
-- [Architecture](#architecture)
-- [Technologies Used](#technologies-used)
 - [Installation](#installation)
+- [Dependencies](#dependencies)
 
 ## Features
 - **Device Comparison:** Compare detailed specifications of phones, SoCs, laptops, and laptop CPUs.
@@ -31,3 +30,13 @@ An app that compares mobile specifications, cpu, SoC and laptops using web scrap
 | Phone Comparison Screen                                                                    | SoC Details Screen                                                                         | SoC Comparison Screen                                                                       |
 |--------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | ![one](https://raw.githubusercontent.com/Kyawkk/Spec-Comparer/master/screenshots/four.png) | ![two](https://raw.githubusercontent.com/Kyawkk/Spec-Comparer/master/screenshots/five.png) | ![three](https://raw.githubusercontent.com/Kyawkk/Spec-Comparer/master/screenshots/six.png) |
+
+
+## Installation
+1. Clone the repository.
+```bash
+# Clone the repository
+git clone https://github.com/Kyawkk/SMS_Sender.git 
+
+2.Open the project in Android Studio.
+3.Build and run the app.
