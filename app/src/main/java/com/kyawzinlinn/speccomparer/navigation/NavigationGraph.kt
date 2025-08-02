@@ -1,5 +1,6 @@
 package com.kyawzinlinn.speccomparer.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -8,6 +9,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.kyawzinlinn.speccomparer.SharedUiViewmodel
 import com.kyawzinlinn.speccomparer.compare.CompareScreen
 import com.kyawzinlinn.speccomparer.details.ProductDetailScreen
@@ -24,17 +26,51 @@ fun NavigationGraph(
     modifier: Modifier = Modifier
 ) {
     val sharedUiState by sharedUiViewmodel.uiState.collectAsStateWithLifecycle()
+    val currentDestination = navController.currentBackStackEntryAsState()
+
+    LaunchedEffect (currentDestination.value?.destination?.route) {
+        Log.d("TAG", "NavigationGraph: ${currentDestination.value?.destination?.route} ${ScreenRoute.Home::class.qualifiedName}")
+        when (currentDestination.value?.destination?.route) {
+            ScreenRoute.Home::class.qualifiedName -> {
+                sharedUiViewmodel.apply {
+                    updateTitle("Home")
+                    hideTrailingIcon()
+                    disableNavigateBack()
+                }
+            }
+            ScreenRoute.Search::class.qualifiedName -> {
+                sharedUiViewmodel.apply {
+                    hideTrailingIcon()
+                    enableNavigateBack()
+                }
+            }
+            ScreenRoute.Compare::class.qualifiedName -> {
+                sharedUiViewmodel.apply {
+                    enableNavigateBack()
+                    showTrailingIcon()
+                }
+            }
+            ScreenRoute.Details::class.qualifiedName -> {
+                sharedUiViewmodel.apply {
+                    enableNavigateBack()
+                    showTrailingIcon()
+                }
+            }
+        }
+    }
 
     NavHost(
-        navController = navController, modifier = modifier, startDestination = ScreenRoute.Home.name
+        navController = navController,
+        modifier = modifier,
+        startDestination = ScreenRoute.Home.name
     ) {
 
         composable(ScreenRoute.Home.name) {
-            sharedUiViewmodel.apply {
-                updateTitle("Home")
-                hideTrailingIcon()
-                disableNavigateBack()
-            }
+//            sharedUiViewmodel.apply {
+//                updateTitle("Home")
+//                hideTrailingIcon()
+//                disableNavigateBack()
+//            }
             HomeScreen(
                 onNavigateSearch = { type, title ->
                     val data = type.name
@@ -49,8 +85,6 @@ fun NavigationGraph(
 
             sharedUiViewmodel.apply {
                 updateTitle(title ?: "Search")
-                hideTrailingIcon()
-                enableNavigateBack()
             }
 
             SearchScreen(
@@ -69,8 +103,6 @@ fun NavigationGraph(
 
             sharedUiViewmodel.apply {
                 updateTitle(product)
-                enableNavigateBack()
-                showTrailingIcon()
             }
 
             LaunchedEffect(Unit) {
@@ -97,7 +129,6 @@ fun NavigationGraph(
 
             sharedUiViewmodel.apply {
                 updateTitle("Comparison")
-                hideTrailingIcon()
             }
 
             CompareScreen(

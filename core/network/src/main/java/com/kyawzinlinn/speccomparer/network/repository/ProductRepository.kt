@@ -10,5 +10,4 @@ interface ProductRepository {
     suspend fun search(query: String, limit: Int, productType: ProductType) : Resource<List<Product>>
     suspend fun getProductSpecifications(device: String, type: ProductType) : Resource<ProductSpecificationResponse>
     suspend fun compareProducts (firstDevice: String, secondDevice: String, type: ProductType): Resource<CompareResponse>
-
 }

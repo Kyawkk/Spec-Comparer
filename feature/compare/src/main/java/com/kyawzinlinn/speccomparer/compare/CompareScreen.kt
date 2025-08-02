@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -69,30 +70,32 @@ fun CompareScreen(
     compareViewModel: CompareViewModel = hiltViewModel()
 ) {
     val compareResponse by compareViewModel.compareResponse.collectAsStateWithLifecycle()
-    var compareDetail by remember { mutableStateOf<CompareResponse?>(null) }
+    var showContent by remember { mutableStateOf(false) }
+    var compareDetailResponse by remember { mutableStateOf<CompareResponse?>(null) }
 
-    LaunchedEffect(Unit) {
+    // Trigger API call when inputs change
+    LaunchedEffect(firstDevice, secondDevice, productType) {
         compareViewModel.compare(firstDevice, secondDevice, productType)
     }
 
     HandleResponse(
         resource = compareResponse,
-        onSuccess = {
-            compareDetail = it
+        onSuccess = { compareDetail ->
+            compareDetailResponse = compareDetail
         },
         onRetry = {
             compareViewModel.compare(firstDevice, secondDevice, productType)
         }
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        if (compareDetail != null) CompareDetailContent(
-            compareResponse = compareDetail!!,
-        )
+    if (compareDetailResponse != null){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            CompareDetailContent(compareResponse = compareDetailResponse!!)
+        }
     }
 }
 
@@ -102,11 +105,8 @@ private fun CompareDetailContent(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberLazyListState()
-    var showStickyTitle by remember { mutableStateOf(false) }
-    LaunchedEffect(scrollState.firstVisibleItemIndex) {
-        withContext(Dispatchers.IO) {
-            showStickyTitle = scrollState.firstVisibleItemIndex != 0
-        }
+    val showStickyTitle by remember {
+        derivedStateOf { scrollState.firstVisibleItemIndex != 0 }
     }
 
     LazyColumn(
@@ -124,26 +124,30 @@ private fun CompareDetailContent(
             ) {
                 StickyTitleRow(
                     firstDevice = compareResponse.compareDeviceHeaderDetails?.firstDeviceName ?: "",
-                    secondDevice = compareResponse.compareDeviceHeaderDetails?.secondDeviceName
-                        ?: ""
+                    secondDevice = compareResponse.compareDeviceHeaderDetails?.secondDeviceName ?: ""
                 )
             }
         }
-        item {
-            key(compareResponse.compareDeviceHeaderDetails?.firstDeviceName) {
-                HeaderSection(compareHeaderDetails = compareResponse.compareDeviceHeaderDetails)
-            }
+
+        // Header Section
+        item(key = compareResponse.compareDeviceHeaderDetails?.firstDeviceName ?: "") {
+            HeaderSection(compareHeaderDetails = compareResponse.compareDeviceHeaderDetails)
         }
+
+        // Key Differences
         item { KeyDifferences(keyDifferences = compareResponse.keyDifferences) }
-        items(compareResponse.compareSpecDetails) {
-            key(it?.title) {
-                CompareSpecItem(
-                    firstDevice = compareResponse.compareDeviceHeaderDetails.safe { headerDetails -> headerDetails.firstDeviceName },
-                    secondDevice = compareResponse.compareDeviceHeaderDetails.safe { headerDetails -> headerDetails.secondDeviceName },
-                    compareDetailResponse = it,
-                    hasExpanded = false
-                )
-            }
+
+        // Spec details
+        items(
+            items = compareResponse.compareSpecDetails,
+            key = { it?.title ?: "" }
+        ) { detail ->
+            CompareSpecItem(
+                firstDevice = compareResponse.compareDeviceHeaderDetails.safe { it.firstDeviceName },
+                secondDevice = compareResponse.compareDeviceHeaderDetails.safe { it.secondDeviceName },
+                compareDetailResponse = detail,
+                hasExpanded = false
+            )
         }
     }
 }
@@ -207,6 +211,7 @@ private fun CompareSpecItem(
         title = compareDetailResponse?.title ?: "",
         modifier = modifier,
         onExpandedChanged = { expanded = it }) {
+
         compareDetailResponse?.scoreBars?.forEach { compareScoreBar ->
             CompareScoreBar(
                 expanded = expanded,
@@ -230,7 +235,10 @@ private fun KeyDifferences(
     ExpandableCard(title = keyDifferences?.title ?: "", modifier = modifier) {
         KeyDifferenceItem(keyDifference = keyDifferences?.firstKeyDifference)
         Spacer(modifier = Modifier.height(16.dp))
-        if (keyDifferences?.secondDifference?.title!!.isNotEmpty()) KeyDifferenceItem(keyDifference = keyDifferences?.secondDifference)
+
+        if (!keyDifferences?.secondDifference?.title.isNullOrEmpty()) {
+            KeyDifferenceItem(keyDifference = keyDifferences?.secondDifference)
+        }
     }
 }
 
@@ -250,7 +258,10 @@ fun KeyDifferenceItem(
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = it, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f))
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                )
             }
         }
     }
@@ -263,30 +274,30 @@ private fun HeaderSection(
 ) {
     val firstDevice = compareHeaderDetails.safe { it.firstDeviceName }
     val secondDevice = compareHeaderDetails.safe { it.secondDeviceName }
+
     ExpandableCard(
         title = "$firstDevice vs $secondDevice",
         expandable = false,
         modifier = modifier.fillMaxWidth()
     ) {
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                HeaderDeviceItem(
-                    modifier = Modifier.weight(0.5f),
-                    score = compareHeaderDetails.safe { it.firstScore },
-                    device = compareHeaderDetails.safe { it.firstDeviceName },
-                    imageUrl = compareHeaderDetails.safe { it.firstImgUrl },
-                    onRetry = { /*TODO*/ })
-
-                HeaderDeviceItem(
-                    modifier = Modifier.weight(0.5f),
-                    score = compareHeaderDetails.safe { it.secondScore },
-                    device = compareHeaderDetails.safe { it.secondDeviceName },
-                    imageUrl = compareHeaderDetails.safe { it.secondImgUrl },
-                    onRetry = { /*TODO*/ })
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            HeaderDeviceItem(
+                modifier = Modifier.weight(0.5f),
+                score = compareHeaderDetails.safe { it.firstScore },
+                device = firstDevice,
+                imageUrl = compareHeaderDetails.safe { it.firstImgUrl },
+                onRetry = {}
+            )
+            HeaderDeviceItem(
+                modifier = Modifier.weight(0.5f),
+                score = compareHeaderDetails.safe { it.secondScore },
+                device = secondDevice,
+                imageUrl = compareHeaderDetails.safe { it.secondImgUrl },
+                onRetry = {}
+            )
         }
     }
 }
